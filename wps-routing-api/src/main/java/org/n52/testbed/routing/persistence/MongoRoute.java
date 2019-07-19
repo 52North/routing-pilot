@@ -34,11 +34,13 @@ public class MongoRoute implements RouteInfo {
 
     @Id
     private ObjectId id = new ObjectId();
+
     private RouteDefinition definition;
     private Route route;
     @NotEmpty
     private String processId;
     @NotEmpty
+    @Indexed
     private String jobId;
     @Indexed(sparse = true)
     private URI subscriber;
@@ -58,6 +60,7 @@ public class MongoRoute implements RouteInfo {
     }
 
     @NotEmpty
+    @Override
     public String getJobId() {
         return jobId;
     }
@@ -75,6 +78,7 @@ public class MongoRoute implements RouteInfo {
     }
 
     @NotEmpty
+    @Override
     public String getProcessId() {
         return processId;
     }

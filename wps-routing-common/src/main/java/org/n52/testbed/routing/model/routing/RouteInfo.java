@@ -21,5 +21,9 @@ import java.util.Optional;
 public interface RouteInfo {
     String getIdentifier();
 
+    String getJobId();
+
+    String getProcessId();
+
     Optional<String> getTitle();
 }

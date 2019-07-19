@@ -16,7 +16,7 @@
  */
 package org.n52.testbed.routing.persistence;
 
-public interface GeoBSONConstants {
+public interface          GeoBSONConstants {
     String TYPE = "type";
     String GEOMETRIES = "geometries";
     String COORDINATES = "coordinates";

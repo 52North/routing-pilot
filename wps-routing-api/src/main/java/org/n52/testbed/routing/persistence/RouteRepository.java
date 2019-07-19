@@ -21,10 +21,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RouteRepository extends MongoRepository<MongoRoute, ObjectId> {
 
     List<MongoRoute> findBySubscriberNotNull();
 
+    Optional<MongoRoute> findByJobId(String jobId);
 }

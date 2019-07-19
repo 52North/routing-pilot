@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.testbed.routing.persistence;
+package org.n52.testbed.routing.persistence.converters;
 
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.mongodb.DBObject;
-import org.bson.BSONObject;
+import org.bson.Document;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -31,46 +30,50 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.n52.testbed.routing.persistence.GeoBSONConstants;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
+import org.springframework.core.convert.converter.GenericConverter;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * {@link JsonDeserializer} for {@link Geometry}.
  *
  * @author Christian Autermann
  */
-@MongoConverter
-@ReadingConverter
-public class GeometryReadConverter implements Converter<DBObject, Geometry> {
+@SuppressWarnings("unchecked")
+public abstract class AbstractGeometryReadConverter<T extends Geometry>
+        implements GenericConverter, Converter<Document, Geometry> {
+
     private final GeometryFactory geometryFactory;
+    private final Class<T> geometryType;
 
-    /**
-     * Creates a new {@link GeometryReadConverter}.
-     */
-    public GeometryReadConverter() {
-        this(null);
-    }
-
-    /**
-     * Creates a new {@link GeometryReadConverter}.
-     *
-     * @param geometryFactory The {@link GeometryFactory} to use to construct geometries.
-     */
-    public GeometryReadConverter(GeometryFactory geometryFactory) {
-        this.geometryFactory = Optional.ofNullable(geometryFactory)
-                                       .orElseGet(GeometryReadConverter::defaultGeometryFactory);
+    protected AbstractGeometryReadConverter(Class<T> geometryType) {
+        this.geometryFactory = defaultGeometryFactory();
+        this.geometryType = Objects.requireNonNull(geometryType);
     }
 
     @Override
-    public Geometry convert(DBObject document) {
+    public Set<ConvertiblePair> getConvertibleTypes() {
+        return Collections.singleton(new ConvertiblePair(Document.class, geometryType));
+    }
+
+    @Override
+    public Geometry convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+        return convert((Document) source);
+    }
+
+    @Override
+    public Geometry convert(Document document) {
         return deserializeGeometry(document);
     }
 
-    private Geometry deserializeGeometry(BSONObject node) {
-        String typeName = node.get(GeoBSONConstants.TYPE).toString();
+    private Geometry deserializeGeometry(Document node) {
+        String typeName = node.getString(GeoBSONConstants.TYPE);
 
         switch (typeName) {
             case GeoBSONConstants.POINT:
@@ -92,84 +95,87 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
         }
     }
 
-    private Point deserializePoint(BSONObject node) {
-        return this.geometryFactory.createPoint(deserializeCoordinate((List) node.get(GeoBSONConstants.COORDINATES)));
+    private Point deserializePoint(Document node) {
+        return this.geometryFactory.createPoint(
+                deserializeCoordinate((List<Number>) node.get(GeoBSONConstants.COORDINATES)));
     }
 
-    private Polygon deserializePolygon(BSONObject node) {
-        return deserializeLinearRings((List<?>) node.get(GeoBSONConstants.COORDINATES));
+    private Polygon deserializePolygon(Document node) {
+        return deserializeLinearRings((List<List<List<Number>>>) node.get(GeoBSONConstants.COORDINATES));
     }
 
-    private MultiPolygon deserializeMultiPolygon(BSONObject node) {
-        List<?> coordinates = (List<?>) node.get(GeoBSONConstants.COORDINATES);
+    private MultiPolygon deserializeMultiPolygon(Document node) {
+        List<List<List<List<Number>>>> coordinates = (List<List<List<List<Number>>>>)
+                                                             node.get(GeoBSONConstants.COORDINATES);
         Polygon[] polygons = new Polygon[coordinates.size()];
         for (int i = 0; i != coordinates.size(); ++i) {
-            polygons[i] = deserializeLinearRings((List<?>) coordinates.get(i));
+            polygons[i] = deserializeLinearRings(coordinates.get(i));
         }
         return this.geometryFactory.createMultiPolygon(polygons);
     }
 
-    private MultiPoint deserializeMultiPoint(BSONObject node) {
-        Coordinate[] coordinates = deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES));
+    private MultiPoint deserializeMultiPoint(Document node) {
+        Coordinate[] coordinates = deserializeCoordinates((List<List<Number>>) node.get(GeoBSONConstants.COORDINATES));
         return this.geometryFactory.createMultiPointFromCoords(coordinates);
     }
 
-    private GeometryCollection deserializeGeometryCollection(BSONObject node) {
-        List<?> geometries = (List<?>) node.get(GeoBSONConstants.GEOMETRIES);
+    private GeometryCollection deserializeGeometryCollection(Document node) {
+        List<Document> geometries = (List<Document>) node.get(GeoBSONConstants.GEOMETRIES);
         Geometry[] geom = new Geometry[geometries.size()];
         for (int i = 0; i != geometries.size(); ++i) {
-            geom[i] = deserializeGeometry((BSONObject) geometries.get(i));
+            geom[i] = deserializeGeometry(geometries.get(i));
         }
         return this.geometryFactory.createGeometryCollection(geom);
     }
 
-    private MultiLineString deserializeMultiLineString(BSONObject node) {
-        LineString[] lineStrings = lineStringsFromJson((List) node.get(GeoBSONConstants.COORDINATES));
+    private MultiLineString deserializeMultiLineString(Document node) {
+        List<List<List<Number>>> coordinates = (List<List<List<Number>>>) node.get(GeoBSONConstants.COORDINATES);
+        LineString[] lineStrings = lineStringsFromJson(coordinates);
         return this.geometryFactory.createMultiLineString(lineStrings);
     }
 
-    private LineString[] lineStringsFromJson(List<?> node) {
+    private LineString[] lineStringsFromJson(List<List<List<Number>>> node) {
         LineString[] strings = new LineString[node.size()];
         for (int i = 0; i != node.size(); ++i) {
-            Coordinate[] coordinates = deserializeCoordinates((List) node.get(i));
+            Coordinate[] coordinates = deserializeCoordinates(node.get(i));
             strings[i] = this.geometryFactory.createLineString(coordinates);
         }
         return strings;
     }
 
-    private LineString deserializeLineString(BSONObject node) {
-        Coordinate[] coordinates = deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES));
+    private LineString deserializeLineString(Document node) {
+        Coordinate[] coordinates = deserializeCoordinates(node.get(GeoBSONConstants.COORDINATES, List.class));
         return this.geometryFactory.createLineString(coordinates);
     }
 
-    private Coordinate[] deserializeCoordinates(List<?> node) {
+    private Coordinate[] deserializeCoordinates(List<List<Number>> node) {
         Coordinate[] points = new Coordinate[node.size()];
         for (int i = 0; i != node.size(); ++i) {
-            points[i] = deserializeCoordinate((List) node.get(i));
+            points[i] = deserializeCoordinate(node.get(i));
         }
         return points;
     }
 
-    private Polygon deserializeLinearRings(List<?> node) {
-        LinearRing shell = deserializeLinearRing((List<?>) node.get(0));
+    private Polygon deserializeLinearRings(List<List<List<Number>>> node) {
+        LinearRing shell = deserializeLinearRing(node.get(0));
         LinearRing[] holes = new LinearRing[node.size() - 1];
         for (int i = 1; i < node.size(); ++i) {
-            holes[i - 1] = deserializeLinearRing((List<?>) node.get(i));
+            holes[i - 1] = deserializeLinearRing(node.get(i));
         }
         return this.geometryFactory.createPolygon(shell, holes);
     }
 
-    private LinearRing deserializeLinearRing(List<?> node) {
+    private LinearRing deserializeLinearRing(List<List<Number>> node) {
         Coordinate[] coordinates = deserializeCoordinates(node);
         return this.geometryFactory.createLinearRing(coordinates);
     }
 
-    private Coordinate deserializeCoordinate(List<?> node) {
+    private Coordinate deserializeCoordinate(List<Number> node) {
         if (node.size() < 2) {
             throw new IllegalArgumentException(String.format("Invalid number of ordinates: %d", node.size()));
         } else {
-            double x = ((Number) node.get(0)).doubleValue();
-            double y = ((Number) node.get(1)).doubleValue();
+            double x = node.get(0).doubleValue();
+            double y = node.get(1).doubleValue();
             if (node.size() < 3) {
                 return new Coordinate(x, y);
             } else {

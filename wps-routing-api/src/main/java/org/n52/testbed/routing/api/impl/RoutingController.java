@@ -55,6 +55,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -154,31 +155,23 @@ public class RoutingController extends AbstractRoutingController implements Defa
 
     @Override
     public ResponseEntity<Void> execute(@Valid Execute body) {
-        RouteInfo routeAsync = service.createRouteAsync(body);
-        URI newLocation = getUriBuilder()
-                                  .path("/processes/routing/jobs/{jobId}")
-                                  .build(routeAsync.getIdentifier());
-        return created(newLocation);
+        RouteInfo routeInfo = service.createRouteAsync(body);
+        return created(getUriBuilder().path("/processes/routing/jobs/{jobId}").build(routeInfo.getJobId()));
     }
 
     @Override
     public ResponseEntity<JobCollection> getJobList() {
-        try {
-            Response<JobCollection> response = getOgcProcessingApi().getJobList(getRoutingProcessId()).execute();
-            if (!response.isSuccessful()) {
-                return copyFailure(response);
-            }
-            return ResponseEntity.ok(response.body());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        JobCollection jobCollection = new JobCollection();
+        jobCollection.setJobs(service.getRoutes().map(RouteInfo::getJobId).filter(Objects::nonNull).collect(toList()));
+        return ResponseEntity.ok(jobCollection);
     }
 
     @Override
     public ResponseEntity<ProcessOffering> getProcessDescription() {
         try {
             Response<ProcessOffering> response = getOgcProcessingApi()
-                                                         .getProcessDescription(getRoutingProcessId()).execute();
+                                                         .getProcessDescription(getRoutingProcessId())
+                                                         .execute();
             if (!response.isSuccessful()) {
                 return copyFailure(response);
             }
@@ -280,15 +273,10 @@ public class RoutingController extends AbstractRoutingController implements Defa
 
     @Override
     public ResponseEntity<StatusInfo> getStatus(String jobId) {
-        try {
-            Response<StatusInfo> response = getOgcProcessingApi().getStatus(getRoutingProcessId(), jobId).execute();
-            if (!response.isSuccessful()) {
-                return copyFailure(response);
-            }
-            return ResponseEntity.ok(response.body());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Route routeByJobId = service.getRouteByJobId(jobId);
+        StatusInfo statusInfo = new StatusInfo();
+        statusInfo.setStatus(routeByJobId.getStatus());
+        return ResponseEntity.ok(statusInfo);
     }
 
     @Override

@@ -411,8 +411,15 @@ public class RouteService {
         return repository.findById(new ObjectId(routeId)).orElseThrow(RouteNotFoundException::new).getDefinition();
     }
 
+    public Route getRouteByJobId(@NotNull String jobId) throws RouteNotFoundException {
+        return checkStatus(repository.findByJobId(jobId).orElseThrow(RouteNotFoundException::new));
+    }
+
     public Route getRoute(@NotNull String routeId) throws RouteNotFoundException {
-        MongoRoute mongoRoute = repository.findById(new ObjectId(routeId)).orElseThrow(RouteNotFoundException::new);
+        return checkStatus(repository.findById(new ObjectId(routeId)).orElseThrow(RouteNotFoundException::new));
+    }
+
+    private Route checkStatus(MongoRoute mongoRoute) {
         if (mongoRoute.getRoute() != null) {
             return mongoRoute.getRoute();
         }
