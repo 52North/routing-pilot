@@ -1,0 +1,1474 @@
+openapi: 3.0.1
+# 2019-05-14 Added push to Routing Pilot GitHub repository
+# 2019-05-24 Updates discussed in the 21 May call (add routing options, work on WPS profile)
+# 2019-05-30 Updates discussed in the 28 May call (add routing options in WPS profile)
+# 2019-05-31 Add subscriber / callback in POST to /routes (#7)
+# 2019-06-18 Update API and the Route Exchange Model (#2, #4, #5, #6, #8)
+# Added by API Auto Mocking Plugin
+servers:
+   - description: SwaggerHub API Auto Mocking
+     url: https://virtserver.swaggerhub.com/cportele/wps-routing-api/1.0.0
+info:
+  title: OGC Routing Pilot - WPS Routing API (DRAFT)
+  version: "1.0.0"
+  description: |-
+    This is a draft of the Routing API and the Route Exchange Model in
+    the OGC Open Routing API Pilot. This document is also available in
+    [GitHub](https://github.com/opengeospatial/RoutingAPIPilot/blob/master/routing-api.yaml).
+    Send comments by email to the pilot mailing list or [create an
+    issue on GitHub](https://github.com/opengeospatial/RoutingAPIPilot/issues).
+
+    The current draft API does not yet include security considerations. Who
+    has access to which routes? How to share routes with others? Etc. This
+    will (probably) be out-of-scope for the pilot, but will be discussed in
+    the ER.
+
+    # WPS Profile
+
+    The Routing API is specified as a profile of OGC API Processes
+    (formerly known as WPS). This profile will be defined under the
+    tag "Option WPS".
+
+    The profile has been derived from the OGC API Processes draft
+    by tailoring the schema definitions to what is needed for the
+    routing process.
+
+    The profile has the following characteristics:
+
+    * The resources are processes and jobs, consistent with the
+    OGC API Processes draft.
+    * The input to routing tasks (jobs) will be the start and end location
+    plus optional routing parameters (intermediate waypoints, constraints,
+    etc.).
+    * In addition, if an API supports multiple options, the
+    client may choose the engine, algorithm or source data.
+    * The optional parameters are separate building blocks so that
+    implementations may or may not support them. That is, additional
+    parameters are packaged in separate conformance classes extending
+    the Core conformance class.
+    *  The output / result of routing tasks is using the Route
+    Exchange Model in GeoJSON.
+
+    Note that the input/output descriptions as part of
+    the processOffering add an additional schema layer.
+    Basically another (WPS-specific) schema description language
+    is modelled as part of the API definition while the schema of
+    the routing parameters is then (only) described in the
+    `/processes/routing` response.
+    In addition, the input values could be represented
+    more concisely, too. And the routing resources could be
+    expressed more naturally in an API that uses the general
+    Web API patterns for processing resources that are also
+    used by OGC API Processes.
+
+    # Routes as first class objects of the API
+
+    As discussed in the WPS Profile above, the WPS resources (processes,
+    jobs) are generic and as aresult, a Routing API that is a profile
+    of a generic Processing API will likely feel complex for client
+    developers that "just" want to use a Routing API.
+
+    An alternative would be to specify a Routing API that has routes
+    as first class resources and uses JSON Schema to specify input
+    and output schemas.
+
+    These resources are basically procedures
+    that operate on one or more source datasets, using a particular
+    routing engine and algorithm. The Core does not expose these
+    backend options, but additional conformance classes will.
+
+    This API approach has been specified under the tag "Option Routes".
+
+    The attempts to keep the API definition as simple as possible.
+
+    It should be straightforward to implement this option as a façade on
+    top of an implementation that is based on OGC API Processes, but it
+    would hide the WPS artefacts from the developer who is "just"
+    interested in routing.
+
+    Open issues:
+    * [#9](https://github.com/opengeospatial/RoutingAPIPilot/issues/9):
+    Do we need a GET operation on `/routes` to fetch all available routes?
+    * [#10](https://github.com/opengeospatial/RoutingAPIPilot/issues/10):
+    Do we need a DELETE operation on `/routes/{routeId}` to remove a
+    route that is no longer needed? In general, how long should routes
+    exist? Until they are explicitly deleted? Or will the server purge
+    routes after some time? Should a duration be included in the route
+    definition?
+
+    # Route definition
+
+    At a minimum, a route is defined by two waypoints, the start and end
+    points of the route. Each API also has to support the options to
+    compute the fastest or the shortest routes. This is part of the
+    conformance class **'core'**.
+
+    Additional routing parameters / constraints are specified in additional
+    conformance classes and implementations may or may not support the
+    additional API building blocks. Each option is specified in a separate
+    conformance class extending **'core'**. All are optional and more
+    can be added.
+
+    * More than two waypoints, default is no intermediate points
+    (conformance class **'intermediate-waypoints'**)
+    * Obstacle restriction (areas the route should avoid), default
+    is no obstacles to avoid (conformance class **'obstacles'**)
+    * Height restriction (in m), default is no constraint (conformance
+    class **'max-height'**)
+    * Maximum load restriction (in t), default is no constraint (conformance
+    class **'max-load'**)
+    * Time and (departure|arrival), default is departure now (conformance
+    class **'time'**)
+    * Routing engine (enum specified by API), default determined by
+    implementation (conformance class **'routing-engine'**)
+    * Routing algorithm (enum specified by API), default determined
+    by implementation (conformance class **'routing-algorithm'**)
+    * Source data (enum specified by API), default determined by
+    implementation (conformance class **'source-dataset'**)
+
+    Open issues:
+    * (none)
+
+    # Route Exchange Model
+
+    An initial proposal for discussion of the Route Exchange Model is
+    described in the GET operation on `/routes/{routeId}`. The idea
+    is that this is a minimal model that everyone can / will support
+    and that additional conformance classes or implementations can
+    extend with additional information as needed.
+
+    In the proposal a 'Route' is represented as a GeoJSON feature
+    collection basically with the following informaton...
+    * A `name`, if one was provided with the route definition.
+    * An array of `features` (the properties of each feature is to
+    be decided):
+      * The route overview. This has a LineString geometry
+      of the complete route path from start to end location.
+      * The start point of the route with a Point geometry.
+      * A feature for every segment of the route. This has a
+      LineString geometry starting at the end of the previous
+      segment (or, for the first segment, the start point).
+      * The end point of the route with a Point geometry.
+
+    Open issues:
+    * (none)
+
+    # Discussion of "Option WPS" vs. "Option Routes"
+
+    The Option WPS has several disadvantages from the view of a
+    developer that is not familiar with OGC API Processes - and
+    an important target group of the OGC API family are developers
+    that are not familiar with OGC standards and that do not have
+    a comprehensive toolset supporting all kinds of OGC standards.
+
+    * "Process" and "Job" are not the resources you would expect
+    in a dedicated rotuing API.
+    * The process description defines an OGC-specific schema language
+    while OpenAPI already uses a schema language (JSON Schema). As a
+    result, a developer das to understand the JSON Schema of the
+    OGC-specific schema language first to understand the input and
+    output schemas of the routing process.
+    * This also results in a more complex and verbose representation
+    in the OGC API Processes variant.
+
+    Moving to the OGC API family one option could be to mainly specify
+    guidance and patterns for API building blocks for processing
+    geospatial data. That is, building blocks how to implement asynchronous
+    or synchronous processes, simple notifications using webhooks, more
+    advanced notifications using MQTT or AsyncAPI, how to specify
+    input and output schemas of processes, etc.
+
+    There are some aspects of the current WPS standard that might also
+    lead to standards. For example (this is an incomplete list!):
+
+    * One of the motivations for the WPS-specific process descriptions
+    was to limit the schema compelexity that WPS-implementations have to
+    support. One approach could be to specify a simple JSON Schema profile
+    for OGC API processing resources that would be based on the existing
+    WPS standard. Since this would be an OGC standard, a key part of this
+    would be spatial and temporal components.
+    I.e., existing WPS implementations would become
+    backends for the rapid development of processing resources that follow
+    the OGC API guidance.
+    * Another capability that needs more thoughts is WPS-T, i.e., the
+    capability to deploy new processing resources. With the uptake
+    of virtualization, containerazation, cloud infrastructures, etc.
+    it is obvious that this is more a general IT topic than an OGC topic
+    as there is nothing "geospatial" about deploying a new container
+    on a server.
+
+    See also [issue #16](https://github.com/opengeospatial/RoutingAPIPilot/issues/16).
+
+  contact:
+    name: Clemens Portele
+    email: portele@interactive-instruments.de
+  license:
+    name: OGC License
+    url: 'https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/LICENSE'
+paths:
+  '/':
+    get:
+      summary: landing page
+      description: |-
+        The landing page provides links to the API definition,
+        the conformance statements and to existing or new routing
+        tasks.
+      operationId: getLandingPage
+      tags:
+        - Capabilities
+      responses:
+        '200':
+          description: links to the API capabilities
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/landing-page'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/conformance':
+    get:
+      summary: information about standards that this API conforms to
+      description: |-
+        list all requirements classes specified in a standard
+        (e.g., OGC API - Processes - Part 1: Core) that the server
+        conforms to
+      operationId: getConformanceDeclaration
+      tags:
+        - Capabilities
+      responses:
+        '200':
+          description: the URIs of all requirements classes supported by the server
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/conf-classes'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/routes':
+    get:
+      summary: |-
+        fetch the list of routes
+      description: |-
+        The list of all routes currently available on this server.
+
+        The response contains a link to each route with the link
+        relation type `item`.
+
+        If a route has a name, the name will be used in the `title`,
+        otherwise the `title` will be set by the server.
+
+        A link to the canonical URI of this document is included,
+        too, with the link relation type `self`.
+
+      operationId: getRoutes
+      tags:
+        - Option Routes
+      responses:
+        '200':
+          description: |-
+            The list of routes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/routes'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+    post:
+      summary: |-
+        compute a route
+      description: |-
+        This creates a new route. The payload of the request specifies the
+        definition of the new route.
+
+        At a minimum, a route is defined by two `waypoints`, the start and end
+        point of the route.
+
+        Every API has to support at least 'fastest' and 'shortest' as the
+        routing `preference`. The default value is 'fastest'.
+
+        An optional `name` for the route may be provided. The name will be
+        used as the title in links to the route (e.g., in the response to
+        `/routes`) and also included in the route itself.
+
+        More parameters and routing constraints can optionally be provided
+        with the routing request:
+        * Source dataset to use when processing the route
+        * Routing engine to use when processing the route
+        * Routing algorithm to use when processing the route
+        * Obstacle requirements
+        * Height restriction
+        * Maximum load restriction
+        * Time of departure or arrival
+
+        If the parameter `mode` is not provided or has a value 'async' the
+        response returns a link the new route in the `Location` header. If
+        the value is 'sync' no route resource is created on the server, but
+        the connection is kept open until the route has been computed. The
+        response contains the route. In synchronous mode the `subscriber`
+        property is ignored.
+      operationId: computeRoute
+      tags:
+        - Option Routes
+      parameters:
+        - $ref: '#/components/parameters/mode'
+      requestBody:
+        description: |-
+          The definition of the route to compute.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/routeDefinition'
+      responses:
+        '200':
+          description: |-
+            This response is only returned for synchronous processing (`mode=sync`).
+            The response is the route.
+
+            If the request included an `Accept-Language`, the server will try to
+            honor the request and otherwise fall back to an available language.
+          content:
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/route'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+              description: |-
+                The language used for names, in particular road/street names.
+        '201':
+          description: |-
+            This response is only returned for asynchronous processing (`mode=async`
+            or no `mode` parameter).
+            The route has been created and the route is being computed.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: |-
+                URI of the new resource.
+        '400':
+          description: |-
+            Malformed route definition.
+        '422':
+          description: |-
+            Unprocessable request. The route definition document appears
+            to be valid, but the server is incapable of processing
+            the request.
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+      callbacks:
+        calculationCompleted:
+          '{$request.body#/subscriber}':
+            post:
+              requestBody:
+                description: the route
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/route'
+              responses:
+                '202':
+                  description: |-
+                    Route received successfully
+  '/routes/{routeId}':
+    get:
+      summary: fetch a route
+      description: |-
+        The route is represented as a GeoJSON feature collection.
+        Its contents will depend on the `status` of the processing.
+
+        If the status is 'finished' the feature collection consists
+        of the following informaton
+        * A `name`, if one was provided with the route definition.
+        * A link to the canonical URI of the route and its definition
+        (link relations `self` and `describedBy`)
+        * An array of features (the properties of each is to be decided)
+          * The route overview feature. This has a LineString
+          geometry of the complete route from start to end location.
+          * The start point of the route with a Point geometry.
+          * A feature for every segment of the route. This has a
+          LineString geometry starting at the end of the previous
+          segment (or, for the first segment, the start point).
+          * The end point of the route with a Point geometry.
+
+        If the status is 'accepted', 'running' or 'failed' the
+        feature collection has less information:
+        * The route overview has a `null` geometry.
+        * No segment features are included.
+
+        The parameter `resultSet` may be used to request only a subset
+        of the route.
+        * 'full' (default) returns the complete feature collection
+        representing the route.
+        * 'overview' returns just the route overview feature.
+        * 'segments' returns the first segment feature with a
+        link to the second segment (link relation `next`), if there
+        is more than one segment. It is up to the server how this is
+        implemented. Options include another parameter to identify the
+        segment by index or temporary, opaque URIs. Every segment except
+        the first and the last segment will include two links (link
+        relations `prev` and `next`). The last segment will only have a
+        `prev` link (unless there is only a single segment in which case
+        there is no `prev` link).
+
+        Support for the `resultSet` parameter is not required and the
+        parameter may be removed from the API definition, if conformance
+        class **'result-set'** is not listed in the conformance
+        declaration (`/conformance`).
+      operationId: getRoute
+      tags:
+        - Option Routes
+      parameters:
+        - $ref: '#/components/parameters/routeId'
+        - $ref: '#/components/parameters/resultSet'
+      responses:
+        '200':
+          description: |-
+            The route or just the route overview or a segment of the route,
+            if parameter `resultSet` was used.
+
+            If the request included an `Accept-Language`, the server will try to
+            honor the request and otherwise fall back to an available language.
+          content:
+            application/geo+json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/route'
+                  - $ref: '#/components/schemas/route-overview'
+                  - $ref: '#/components/schemas/route-segment'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+              description: |-
+                The language used for names, in particular road/street names.
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+    delete:
+      summary: delete a route
+      description: |-
+        Delete the route with identifier `routeId`.
+
+        Note that the WPS API does not define a DELETE operation.
+        But don't we need one?
+      operationId: deleteRoute
+      tags:
+        - Option Routes
+      parameters:
+        - $ref: '#/components/parameters/routeId'
+      responses:
+        '204':
+          description: |-
+            Route deleted.
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/routes/{routeId}/definition':
+    get:
+      summary: fetch the definition of a route
+      description: |-
+        This operation returns the original definition of the route that
+        was submitted when the route was created using POST on `/routes`.
+      operationId: getRouteDefinition
+      tags:
+        - Option Routes
+      parameters:
+        - $ref: '#/components/parameters/routeId'
+      responses:
+        '200':
+          description: The route definition.
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/routeDefinition'
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/processes':
+    get:
+      summary: retrieve the processes available
+      description: |-
+        The response is a list of processes available on this server.
+        In the Routing API Pilot there is only a single process that is
+        specified.
+      operationId: getProcesses
+      tags:
+        - Option WPS
+      responses:
+        '200':
+          description: |-
+            Information about the available processes
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/processCollection'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/processes/{processId}':
+    parameters:
+      - $ref: '#/components/parameters/processId'
+    get:
+      summary: retrieve a process description
+      operationId: getProcessDescription
+      tags:
+        - Option WPS
+      responses:
+        '200':
+          description: The description of the process.
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/processOffering'
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/processes/{processId}/jobs':
+    parameters:
+      - $ref: '#/components/parameters/processId'
+    get:
+      summary: retrieve the list of jobs for a process.
+      operationId: getJobList
+      tags:
+        - Option WPS
+      responses:
+        '200':
+          description: A list of jobs for this process.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/jobCollection'
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+    post: #TODO sync execute
+      summary: execute a process.
+      operationId: execute
+      tags:
+        - Option WPS
+      requestBody:
+        description: Mandatory execute request JSON
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/execute'
+      responses:
+        '201':
+          description: |-
+            Started execution. Created job.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: |-
+                URI of the new resource.
+        '400':
+          description: |-
+            Malformed route definition.
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '422':
+          description: |-
+            Unprocessable request. The route definition document appears
+            to be valid, but the server is incapable of processing
+            the request.
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/processes/{processId}/jobs/{jobId}':
+    get:
+      summary: retrieve the status of a job
+      operationId: getStatus
+      tags:
+        - Option WPS
+      parameters:
+        - $ref: '#/components/parameters/jobId'
+        - $ref: '#/components/parameters/processId'
+      responses:
+        '200':
+          description: The status of a job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusInfo'
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+  '/processes/{processId}/jobs/{jobId}/result':
+    get:
+      summary: retrieve the result(s) of a job
+      operationId: getResult
+      tags:
+        - Option WPS
+      parameters:
+        - $ref: '#/components/parameters/jobId'
+        - $ref: '#/components/parameters/processId'
+      responses:
+        '200':
+          description: The result of a job.
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/result'
+        '404':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
+        '500':
+          $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
+components:
+  parameters:
+    processId:
+      name: processId
+      in: path
+      description: The id of the process
+      required: true
+      schema:
+        type: string
+    routeId:
+      name: routeId
+      in: path
+      description: The id of the route
+      required: true
+      schema:
+        type: string
+    jobId:
+      name: jobId
+      in: path
+      description: The id of a job
+      required: true
+      schema:
+        type: string
+    resultSet:
+      name: resultSet
+      in: query
+      description: |-
+        Request the complete route or only a subset.
+
+        Support for this parameter is not required and the parameter may be
+        removed from the API definition, if conformance class **'result-set'**
+        is not listed in the conformance declaration under `/conformance`.
+      schema:
+        type: string
+        enum:
+          - full
+          - overview
+          - segments
+        default: full
+    mode:
+      name: mode
+      in: query
+      description: |-
+        Controls whether the request is processed asynchronuous (the default)
+        or synchronous (the route isreturned in the response to the POST request
+        and not stored on the routing server).
+
+        Support for this parameter is not required and the parameter may be
+        removed from the API definition, if conformance class **'sync-mode'**
+        is not listed in the conformance declaration under `/conformance`.
+      schema:
+        type: string
+        enum:
+          - async
+          - sync
+        default: async
+  schemas:
+    routeDefinition:
+      description: |-
+        The definition of a route. At a minimum, a route is defined by a start and
+        end point.
+
+        More parameters and routing constraints will be added later.
+      type: object
+      required:
+        - waypoints
+      properties:
+        name:
+          description: |-
+            An optional name for the route. If provided, the name will be used as
+            titles in the list of routes (`/routes`) and also included in the route
+            itself.
+          type: string
+        waypoints:
+          description: |-
+            A list of points along the route. At least two points have to be provided
+            (start and end point).
+
+            APIs supporting no intermediate waypoints (conformance class
+            **'intermediate-waypoints'**) may add `maxItems: 2` - or any
+            other number greater than two, if they support a limited number of
+            intermediate waypoints.
+          type: object
+          required:
+            - type
+            - coordinates
+          properties:
+            type:
+              type: string
+              enum:
+                - MultiPoint
+            coordinates:
+              type: array
+              minItems: 2
+              items:
+                title: Points along the route
+                type: array
+                minItems: 2
+                items:
+                  type: number
+        preference:
+          description: |-
+            The routing preference.
+
+            Every API has to support at least 'fastest' and 'shortest'. The
+            default value should be 'fastest'.
+          type: string
+          default: fastest
+          enum:
+            - fastest
+            - shortest
+        maxHeight:
+          description: |-
+            A height restriction for vehicles in meters to consider when
+            computing the route.
+
+            If a server does not have sufficient data to compute a route with
+            height restrictions for the selected area or the selected routing
+            engine does not support such restrictions, an error is returned
+            (status code `400`).
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'max-height'**
+            is not listed in the conformance declaration under `/conformance`.
+          type: number
+        maxWeight:
+          description: |-
+            A weight restriction for vehicles in tons to consider when computing
+            the route.
+
+            If a server does not have sufficient data to compute a route with
+            weight restrictions for the selected area or the selected routing
+            engine does not support such restrictions, an error is returned
+            (status code `400`).
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'max-weight'**
+            is not listed in the conformance declaration under `/conformance`.
+          type: number
+        obstacles:
+          description: |-
+            One or more polygons describing areas the route should avoid.
+
+            NOTE: This is a simple approach that is sufficient for the pilot.
+            In general, the list of obstacles could also be a feature collection
+            where every obstacle is a feature. Such a representation would be
+            required, if the routing engine is able to handle obstacles with
+            different characteristics/properties (for example,an obstacle is
+            only valid for a certain time interval).
+
+            If a server does not have sufficient data to compute a route with
+            obstacle restrictions for the selected area or the selected routing
+            engine does not support such restrictions, an error is returned
+            (status code `400`).
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'obstacles'**
+            is not listed in the conformance declaration under `/conformance`.
+          type: object
+          title: GeoJSON MultiPolygon
+          required:
+            - type
+            - coordinates
+          properties:
+            type:
+              type: string
+              enum:
+                - MultiPolygon
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  minItems: 4
+                  items:
+                    type: array
+                    minItems: 2
+                    items:
+                      type: number
+        dataset:
+          description: |-
+            The source dataset to use for calculating the route.
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'source-dataset'**
+            is not listed in the conformance declaration under `/conformance`.
+            The enum values may be changed to reflect the datasets supported by the
+            server.
+          type: string
+          enum:
+            - "NSG"
+            - "OSM"
+            - "HERE"
+        engine:
+          description: |-
+            The routing engine to use for calculating the route.
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'routing-engine'**
+            is not listed in the conformance declaration under `/conformance`.
+            The enum values may be changed to reflect the routing engines supported by the
+            server.
+          type: string
+          enum:
+            - "Skymantics"
+            - "Ecere"
+            - "HERE"
+        algorithm:
+          description: |-
+            The routing / graph solving algorithm to use for calculating the route.
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'routing-algorithm'**
+            is not listed in the conformance declaration under `/conformance`.
+            The enum values may be changed to reflect the routing algorithms supported
+            by the server.
+          type: string
+          enum:
+            - "Dikjstra"
+            - "Floyd Marshall"
+            - "A*"
+        when:
+          description: |-
+            The time of departure or arrival. The default value is now (departure).
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'time'**
+            is not listed in the conformance declaration under `/conformance`.
+          type: object
+          required:
+            - timestamp
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            type:
+              type: string
+              default: "departure"
+              enum:
+                - "departure"
+                - "arrival"
+        subscriber:
+          description: |-
+            Optional URI for a callback once the route has been calculated.
+
+            Support for this parameter is not required and the parameter may be
+            removed from the API definition, if conformance class **'callback'**
+            is not listed in the conformance declaration under `/conformance`.
+          type: string
+          format: uri
+    routes:
+      description: |-
+        The list of routes currently available.
+
+        To be discussed. This could be more sophisticated and include
+        information about the status, start/end point, etc. But it is
+        unclear whether this operation is needed and this should be
+        discussed first.
+      type: object
+      properties:
+        links:
+          description: |-
+            The response includes links to each available route. If
+            a route has a name, the name will be used in the title,
+            otherwise the title will be set by the server.
+
+            A link to the canonical URI of this document should be
+            included, too.
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/link'
+    route:
+      description: |-
+        The route is represented as a GeoJSON feature collection.
+      type: object
+      required:
+        - type
+        - status
+        - features
+      properties:
+        type:
+          description: |-
+            This value is fixed and identifies this object as a GeoJSON
+            feature collection.
+          type: string
+          enum:
+            - FeatureCollection
+        status:
+          $ref: '#/components/schemas/statusEnum'
+        name:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/link'
+        features:
+          type: array
+          description: |-
+            The first feature is the route overview, followed by the start point, any segments
+            and finally the end point.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/route-overview'
+              - $ref: '#/components/schemas/route-start-or-end'
+              - $ref: '#/components/schemas/route-segment'
+        bbox:
+          type: array
+          minItems: 4
+          items:
+            type: number
+    route-start-or-end:
+      type: object
+      required:
+        - type
+        - properties
+        - geometry
+      properties:
+        type:
+          type: string
+          enum:
+            - Feature
+        properties:
+          type: object
+          nullable: true
+          required:
+            - type
+          properties:
+            type:
+              type: string
+              enum:
+                - start
+                - end
+        geometry:
+          type: object
+          nullable: true
+          required:
+            - type
+            - coordinates
+          properties:
+            type:
+              type: string
+              enum:
+                - Point
+            coordinates:
+              type: array
+              minItems: 2
+              items:
+                type: number
+    route-overview:
+      type: object
+      required:
+        - type
+        - properties
+        - geometry
+      properties:
+        type:
+          type: string
+          enum:
+            - Feature
+        properties:
+          type: object
+          nullable: true
+          required:
+            - type
+            - length_m
+            - duration_s
+          properties:
+            type:
+              type: string
+              enum:
+                - overview
+            length_m:
+              title: length
+              description: the length of the route (in meters)
+              type: number
+            duration_s:
+              title: duration
+              description: the estimated amount of time required to travel the route (in seconds)
+              type: number
+            maxHeight_m:
+              title: maxmimum height
+              description: if the route has a known height restriction, it will be provided (in meters)
+              type: number
+            maxLoad_t:
+              title: maxmimum load
+              description: if the route has a known load restriction, it will be provided (in tons)
+              type: number
+            obstacles:
+              title: obstacles considered
+              description: if the route was calculated taking an obstacle into account, textual information will be provided
+              type: string
+        geometry:
+          type: object
+          nullable: true
+          required:
+            - type
+            - coordinates
+          properties:
+            type:
+              type: string
+              enum:
+                - LineString
+            coordinates:
+              type: array
+              minItems: 2
+              items:
+                type: array
+                minItems: 2
+                items:
+                  type: number
+    route-segment:
+      type: object
+      required:
+        - type
+        - properties
+        - geometry
+        - links
+      properties:
+        type:
+          type: string
+          enum:
+            - Feature
+        properties:
+          type: object
+          nullable: true
+          required:
+            - type
+            - levelOfDetail
+            - length_m
+            - duration_s
+          properties:
+            type:
+              type: string
+              enum:
+                - segment
+            levelOfDetail:
+              title: level of detail
+              description: ready to visualize (with all the coordinates that allow visualization of the shape of the segment) or summary (with just start and end coordinates of the segment)
+              type: string
+              enum:
+                - summary
+                - visualization
+            length_m:
+              title: length
+              description: the length of the segment (in meters)
+              type: number
+            duration_s:
+              title: duration
+              description: the estimated amount of time required to travel the route (in seconds)
+              type: number
+            maxHeight_m:
+              title: maxmimum height
+              description: if the segment has a known height restriction, it will be provided (in meters)
+              type: number
+            maxLoad_t:
+              title: maxmimum load
+              description: if the segment has a known load restriction, it will be provided (in tons)
+              type: number
+            speedLimit:
+              title: speed limit
+              description: if the segment has a known speed limit, it will be provided (in the unit specified by `speedLimitUnit`)
+              type: integer
+            speedLimitUnit:
+              title: speed limit unit
+              description: the local unit used for speed limits
+              type: string
+              enum:
+                - kmph
+                - mph
+            roadName:
+              title: road/street name
+              description: the road/street name of the segment; the language is specified in the Content-Language header
+              type: string
+            instructions:
+              title: turn instructions
+              description: instructions at the end of the segment (continue, turn right or turn left to a different street)
+              type: string
+              enum:
+                - continue
+                - left
+                - right
+        geometry:
+          type: object
+          nullable: true
+          required:
+            - type
+            - coordinates
+          properties:
+            type:
+              type: string
+              enum:
+                - LineString
+            coordinates:
+              type: array
+              minItems: 2
+              items:
+                type: array
+                minItems: 2
+                items:
+                  type: number
+        links:
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/link'
+    statusInfo:
+      type: object
+      required:
+          - status
+      properties:
+        status:
+          $ref: '#/components/schemas/statusEnum'
+        message:
+          type: string
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+    statusEnum:
+      description: The processing status.
+      type: string
+      enum:
+        - accepted
+        - running
+        - successful
+        - failed
+    result:
+      type: object
+      required:
+        - outputs
+      properties:
+        outputs:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - value
+            properties:
+              id:
+                type: string
+              value:
+                type: object
+                properties:
+                  inlineValue:
+                    $ref: '#/components/schemas/route'
+    processCollection:
+      type: object
+      required:
+        - processes
+      properties:
+        processes:
+          type: array
+          items:
+            $ref: '#/components/schemas/processSummary'
+    processSummary:
+      allOf:
+        - $ref: '#/components/schemas/descriptionType'
+        - type: object
+          required:
+            - version
+          properties:
+            version:
+              type: string
+            jobControlOptions:
+              type: array
+              items:
+                $ref: '#/components/schemas/jobControlOptions'
+            outputTransmission:
+              type: array
+              items:
+                $ref: '#/components/schemas/transmissionMode'
+            links:
+              type: array
+              items:
+                $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/link'
+    descriptionType:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/schemas/link'
+    transmissionMode:
+      type: string
+      enum:
+        - value
+    jobControlOptions:
+      type: string
+      enum:
+        - sync-execute
+        - async-execute
+    processOffering:
+      type: object
+      required:
+        - process
+      properties:
+        process:
+          $ref: '#/components/schemas/process'
+    process:
+      allOf:
+        - $ref: '#/components/schemas/processSummary'
+        - type: object
+          required:
+            - inputs
+            - outputs
+          properties:
+            inputs:
+              type: array
+              items:
+                $ref: '#/components/schemas/inputDescription'
+            outputs:
+              type: array
+              items:
+                $ref: '#/components/schemas/outputDescription'
+    inputDescription:
+      allOf:
+        - $ref: '#/components/schemas/descriptionType'
+        - type: object
+          properties:
+            input:
+              oneOf:
+                - $ref: '#/components/schemas/complexDataType'
+                - $ref: '#/components/schemas/literalDataType'
+            minOccurs:
+              type: integer
+            maxOccurs:
+              type: integer
+    outputDescription:
+      allOf:
+        - $ref: '#/components/schemas/descriptionType'
+        - type: object
+          properties:
+            output:
+              oneOf:
+                - $ref: '#/components/schemas/complexDataType'
+                - $ref: '#/components/schemas/literalDataType'
+    complexDataType:
+      type: object
+      required:
+        - formats
+      properties:
+        formats:
+          type: array
+          items:
+            $ref: '#/components/schemas/formatDescription'
+    formatDescription:
+      allOf:
+        - $ref: '#/components/schemas/format'
+        - type: object
+          properties:
+            maximumMegabytes:
+              type: integer
+            default:
+              type: boolean
+              default: false
+    format:
+      type: object
+      required:
+        - mimeType
+      properties:
+        mimeType:
+          type: string
+        schema:
+          type: string
+        encoding:
+          type: string
+    literalDataType:
+      type: object
+      properties:
+        literalDataDomains:
+          type: array
+          items:
+            $ref: '#/components/schemas/literalDataDomain'
+    literalDataDomain:
+      allOf:
+        - oneOf:
+          - $ref: '#/components/schemas/allowedValues'
+          - $ref: '#/components/schemas/allowedRanges'
+          - $ref: '#/components/schemas/anyValue'
+          - $ref: '#/components/schemas/valuesReference'
+        - type: object
+          properties:
+            defaultValue:
+              type: string
+            dataType:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                reference:
+                  type: string
+                  format: uri
+            uom:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                reference:
+                  type: string
+                  format: uri
+    allowedValues:
+      type: array
+      items:
+        oneOf:
+          - type: string
+          - $ref: '#/components/schemas/range'
+    range:
+      type: object
+      properties:
+        minimumValue:
+          type: string
+        maximumValue:
+          type: string
+        spacing:
+          type: string
+        rangeClosure:
+          type: string
+          enum:
+            - closed
+            - open
+            - open-closed
+            - closed-open
+    allowedRanges:
+      type: object
+      required:
+        - allowedRanges
+      properties:
+        allowedRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/range'
+    anyValue:
+      type : object
+      properties:
+        anyValue:
+          type: boolean
+          default: true
+    valuesReference:
+      type: string
+      format: uri
+    jobCollection:
+      type: object
+      required:
+        - jobs
+      properties:
+        jobs:
+          type: array
+          items:
+            type: string
+    execute:
+      type: object
+      required:
+        - outputs
+      properties:
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/input'
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/output'
+    input:
+      type: object
+      required:
+        - id
+        - input
+      properties:
+        id:
+          type: string
+        input:
+          oneOf:
+            - $ref: '#/components/schemas/complexData'
+            - $ref: '#/components/schemas/literalData'
+    output:
+      allOf:
+        - $ref: '#/components/schemas/dataType'
+        - type: object
+          properties:
+            id:
+              type: string
+            transmissionMode:
+              $ref: '#/components/schemas/transmissionMode'
+    dataType:
+      type: object
+      properties:
+        format:
+          $ref: '#/components/schemas/format'
+    complexData:
+      allOf:
+        - $ref: '#/components/schemas/dataType'
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              $ref: '#/components/schemas/inlineValue'
+    inlineValue:
+      type: object
+    literalData:
+      type: object
+      properties:
+        value:
+          type: string
+        dataType:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+            reference:
+              type: string
+              format: uri
+        uom:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+            reference:
+              type: string
+              format: uri
+tags:
+  - name: Capabilities
+    description: Essential characteristics of this API.
+  - name: Option Routes
+    description: Routes as first class resources
+  - name: Option WPS
+    description: WPS profile

@@ -1,0 +1,39 @@
+spring:
+  profile:
+    active:
+    - debug
+  application:
+    name: Routing API
+
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: routing
+
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+    time-zone: UTC
+
+  mvc:
+    servlet:
+      path: /
+
+server:
+  address: 0.0.0.0
+  compression:
+    enabled: true
+  error:
+    includeException: true
+    includeStacktrace: always
+  port: 8000
+  servlet:
+    contextPath: /
+
+
+routing:
+  endpoint: https://testbed.dev.52north.org/javaps/rest/
+  process: org.n52.project.tb15.du.GetUpdatesProcess
+  polling:
+    delay: PT5S

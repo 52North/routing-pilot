@@ -1,0 +1,11 @@
+**/target/
+*.Dockerfile
+docker-compose.yml
+.gitignore
+.gitmodules
+*.http
+NOTICE
+LICENSE
+README.md
+
+

@@ -1,0 +1,66 @@
+package org.n52.testbed.routing.service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.*;
+import org.n52.testbed.routing.model.MediaTypes;
+import org.n52.testbed.routing.model.routing.RouteInfo;
+import org.n52.testbed.routing.model.routing.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.net.URI;
+
+@Service
+public class NotifyService {
+    private static final Logger LOG = LoggerFactory.getLogger(NotifyService.class);
+    @Autowired
+    private OkHttpClient httpClient;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    public void notifySubscriber(RouteInfo routeInfo, URI subscriber, Route route) {
+        try {
+
+            httpClient.newCall(createRequest(route, subscriber)).enqueue(new NotifyCallback(routeInfo));
+        } catch (JsonProcessingException e) {
+            failure(routeInfo, e);
+        }
+    }
+
+    private Request createRequest(Route route, URI subscriber) throws JsonProcessingException {
+        RequestBody body = RequestBody.create(MediaType.get(MediaTypes.APPLICATION_JSON), objectMapper.writeValueAsBytes(route));
+
+        return new Request.Builder().url(subscriber.toString()).post(body).build();
+    }
+
+    private static void failure(RouteInfo routeInfo, Throwable throwable) {
+        LOG.warn(String.format("Failed to notify subscriber for %s", routeInfo.getIdentifier()), throwable);
+    }
+
+    private static class NotifyCallback implements Callback {
+        private final RouteInfo routeInfo;
+
+        NotifyCallback(RouteInfo routeInfo) {
+            this.routeInfo = routeInfo;
+        }
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+            failure(routeInfo, e);
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) {
+            if (response.isSuccessful()) {
+                LOG.info("Successfully notified subscriber for {}", routeInfo.getIdentifier());
+            } else {
+                LOG.warn("Subscriber for {} returned failure: {} {}", routeInfo.getIdentifier(), response.code(), response.message());
+            }
+
+        }
+    }
+}

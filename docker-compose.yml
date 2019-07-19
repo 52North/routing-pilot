@@ -1,0 +1,35 @@
+version: '3'
+services:
+  here-api:
+    image: ogc/routing-api:latest
+    build:
+      dockerfile: api.Dockerfile
+    ports:
+      - 8000:8000
+    expose:
+      - 8000/tcp
+    depends_on:
+      - wps
+      - mongo
+    environment:
+      SERVER_PORT: 8000
+      ROUTING_ENDPOINT: http://wps:8080/rest
+      ROUTING_PROCESS: org.n52.routing.here
+      SPRING_DATA_MONGODB_HOST: mongo
+      SPRING_DATA_MONGODB_PORT: 27017
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+
+  wps:
+    build:
+      dockerfile: wps.Dockerfile
+    image: ogc/routing-wps:latest
+    ports:
+      - 8080:8080
+    environment:
+      HERE_APP_ID: ${HERE_APP_ID}
+      HERE_APP_CODE: ${HERE_APP_CODE}
+
