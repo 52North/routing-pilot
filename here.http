@@ -1,0 +1,76 @@
+GET http://localhost:8000/
+Accept: application/json
+
+###
+GET http://localhost:8000/conformance
+Accept: application/json
+
+###
+GET http://localhost:8000/processes
+Accept: application/json
+
+###
+GET http://localhost:8000/processes/routing
+Accept: application/json
+
+###
+GET http://localhost:8080/rest/processes/org.n52.routing.here/jobs
+Accept: application/json
+
+###
+GET http://localhost:8000/processes/routing/jobs
+Accept: application/json
+
+###
+GET http://localhost:8000/routes
+Accept: application/json
+
+###
+POST http://localhost:8000/processes/routing/jobs
+Accept: application/json
+Content-Type: application/json
+
+{
+  "inputs":[
+    {
+      "id": "name",
+      "input": { "value": "The name of the Route." }
+    },
+    {
+      "id": "waypoints",
+      "input": {
+        "format": { "mimeType": "application/geo+json" },
+        "value": {
+          "inlineValue": {
+            "type": "MultiPoint", 
+            "coordinates": [
+              [-77.047712, 38.892346],
+              [-76.994730, 38.902629]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "preference",
+      "input": { 
+        "value": "fastest"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "route",
+      "format": { "mimeType": "application/geo+json" },
+      "transmissionMode": "value"
+    }
+  ]
+}
+###
+
+GET http://localhost:8000/processes/routing/jobs/ede26899-3f67-440a-b85f-34fd7d338daa
+Accept: application/json
+
+###
+GET http://localhost:8000/processes/routing/jobs/ba1aed0d-c95f-4fac-8aa1-ca9a6f599e9e/result
+Accept: application/json
