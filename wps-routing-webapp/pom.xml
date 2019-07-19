@@ -32,6 +32,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>routing-processes</artifactId>
+            <scope>runtime</scope>
             <!-- exclude these to not have duplicated snapshot dependencies -->
             <exclusions>
                 <exclusion>
@@ -43,6 +44,7 @@
         <dependency>
             <groupId>org.n52.wps</groupId>
             <artifactId>javaps-rest</artifactId>
+            <scope>runtime</scope>
             <!-- exclude these to not have duplicated snapshot dependencies -->
             <exclusions>
                 <exclusion>
@@ -58,6 +60,7 @@
         <dependency>
             <groupId>org.n52.wps</groupId>
             <artifactId>webapp</artifactId>
+            <scope>runtime</scope>
             <type>war</type>
         </dependency>
     </dependencies>

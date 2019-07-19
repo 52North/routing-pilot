@@ -72,8 +72,8 @@ public class HereAlgorithmTest {
     @BeforeClass
     public static void setSystemProperties() {
         Dotenv dotenv = Dotenv.configure().directory("..").load();
-        System.setProperty(HereAlgorithm.HERE_APP_CODE_PROPERTY, dotenv.get(HereAlgorithm.HERE_APP_CODE_ENV_VARIABLE, null));
-        System.setProperty(HereAlgorithm.HERE_APP_ID_PROPERTY, dotenv.get(HereAlgorithm.HERE_APP_ID_ENV_VARIABLE, null));
+        System.setProperty(HereAlgorithm.HERE_APP_CODE_PROPERTY, dotenv.get(HereAlgorithm.HERE_APP_CODE_ENV_VARIABLE, ""));
+        System.setProperty(HereAlgorithm.HERE_APP_ID_PROPERTY, dotenv.get(HereAlgorithm.HERE_APP_ID_ENV_VARIABLE, ""));
     }
 
     @Before

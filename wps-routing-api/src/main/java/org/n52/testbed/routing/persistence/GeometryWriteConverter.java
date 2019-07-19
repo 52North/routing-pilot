@@ -21,13 +21,9 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.locationtech.jts.geom.*;
-import org.n52.jackson.datatype.jts.GeoJsonConstants;
-import org.n52.jackson.datatype.jts.GeometryType;
-import org.n52.jackson.datatype.jts.IncludeBoundingBox;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 
-import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -41,25 +37,6 @@ import static java.util.stream.Collectors.toCollection;
 @MongoConverter
 @WritingConverter
 public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
-
-    private final IncludeBoundingBox includeBoundingBox;
-
-    /**
-     * Creates a new {@link GeometryWriteConverter}.
-     */
-    public GeometryWriteConverter() {
-        this(null);
-    }
-
-    /**
-     * Creates a new {@link GeometryWriteConverter}.
-     *
-     * @param includeBoundingBox when to include a bounding box for a {@link Geometry}.
-     */
-    public GeometryWriteConverter(IncludeBoundingBox includeBoundingBox) {
-        this.includeBoundingBox = Optional.ofNullable(includeBoundingBox)
-                .orElseGet(IncludeBoundingBox::never);
-    }
 
     @Override
     public DBObject convert(Geometry geometry) {
@@ -87,23 +64,31 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
 
     private BasicDBObject serializeTypeAndBoundingBox(Geometry geometry) {
         BasicDBObject o = new BasicDBObject();
-        GeometryType type = GeometryType.forGeometry(geometry).orElseThrow(IllegalArgumentException::new);
-        o.put(GeoJsonConstants.Fields.TYPE, type.toString());
-        if (this.includeBoundingBox.shouldIncludeBoundingBoxFor(type) && !geometry.isEmpty()) {
-            Envelope envelope = geometry.getEnvelopeInternal();
-            BasicDBList list = new BasicDBList();
-            list.add(envelope.getMinX());
-            list.add(envelope.getMinY());
-            list.add(envelope.getMaxX());
-            list.add(envelope.getMaxY());
-            o.put(GeoJsonConstants.Fields.BOUNDING_BOX, list);
+
+        if (geometry instanceof Point) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.POINT);
+        } else if (geometry instanceof LineString) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.LINE_STRING);
+        } else if (geometry instanceof Polygon) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.POLYGON);
+        } else if (geometry instanceof MultiPoint) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.MULTI_POINT);
+        } else if (geometry instanceof MultiLineString) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.MULTI_LINE_STRING);
+        } else if (geometry instanceof  MultiPolygon) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.MULTI_POLYGON);
+        } else if (geometry instanceof GeometryCollection) {
+            o.put(GeoBSONConstants.TYPE, GeoBSONConstants.GEOMETRY_COLLECTION);
+        } else {
+            throw new IllegalArgumentException();
         }
+
         return o;
     }
 
     private DBObject serialize(GeometryCollection value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.GEOMETRIES,
+                .append(GeoBSONConstants.GEOMETRIES,
                         IntStream.range(0, value.getNumGeometries())
                                 .mapToObj(value::getGeometryN)
                                 .map(this::convert)
@@ -112,7 +97,7 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
 
     private DBObject serialize(MultiPoint value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.COORDINATES,
+                .append(GeoBSONConstants.COORDINATES,
                         IntStream.range(0, value.getNumGeometries())
                                 .mapToObj(value::getGeometryN)
                                 .map(Point.class::cast)
@@ -122,7 +107,7 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
 
     private DBObject serialize(MultiLineString value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.COORDINATES,
+                .append(GeoBSONConstants.COORDINATES,
                         IntStream.range(0, value.getNumGeometries())
                                 .mapToObj(value::getGeometryN)
                                 .map(LineString.class::cast)
@@ -132,7 +117,7 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
 
     private DBObject serialize(MultiPolygon value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.COORDINATES,
+                .append(GeoBSONConstants.COORDINATES,
                         IntStream.range(0, value.getNumGeometries())
                                 .mapToObj(value::getGeometryN)
                                 .map(Polygon.class::cast)
@@ -142,17 +127,17 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
 
     private DBObject serialize(Polygon value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.COORDINATES, serializeCoordinates(value));
+                .append(GeoBSONConstants.COORDINATES, serializeCoordinates(value));
     }
 
     private DBObject serialize(LineString value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.COORDINATES, serializeCoordinates(value));
+                .append(GeoBSONConstants.COORDINATES, serializeCoordinates(value));
     }
 
     private DBObject serialize(Point value) {
         return serializeTypeAndBoundingBox(value)
-                .append(GeoJsonConstants.Fields.COORDINATES, serializeCoordinate(value));
+                .append(GeoBSONConstants.COORDINATES, serializeCoordinate(value));
     }
 
     private DBObject serializeCoordinates(Polygon value) {

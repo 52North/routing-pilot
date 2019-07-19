@@ -20,8 +20,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.mongodb.DBObject;
 import org.bson.BSONObject;
 import org.locationtech.jts.geom.*;
-import org.n52.jackson.datatype.jts.GeoJsonConstants;
-import org.n52.jackson.datatype.jts.GeometryType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
@@ -61,25 +59,22 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private Geometry deserializeGeometry(BSONObject node) {
-        String typeName = node.get(GeoJsonConstants.Fields.TYPE).toString();
+        String typeName = node.get(GeoBSONConstants.TYPE).toString();
 
-        GeometryType type = GeometryType.fromString(typeName)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Invalid geometry type: %s", typeName)));
-
-        switch (type) {
-            case POINT:
+        switch (typeName) {
+            case GeoBSONConstants.POINT:
                 return deserializePoint(node);
-            case MULTI_POINT:
+            case GeoBSONConstants.MULTI_POINT:
                 return deserializeMultiPoint(node);
-            case LINE_STRING:
+            case GeoBSONConstants.LINE_STRING:
                 return deserializeLineString(node);
-            case MULTI_LINE_STRING:
+            case GeoBSONConstants.MULTI_LINE_STRING:
                 return deserializeMultiLineString(node);
-            case POLYGON:
+            case GeoBSONConstants.POLYGON:
                 return deserializePolygon(node);
-            case MULTI_POLYGON:
+            case GeoBSONConstants.MULTI_POLYGON:
                 return deserializeMultiPolygon(node);
-            case GEOMETRY_COLLECTION:
+            case GeoBSONConstants.GEOMETRY_COLLECTION:
                 return deserializeGeometryCollection(node);
             default:
                 throw new IllegalArgumentException(String.format("Invalid geometry type: %s", typeName));
@@ -87,15 +82,15 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private Point deserializePoint(BSONObject node) {
-        return this.geometryFactory.createPoint(deserializeCoordinate((List) node.get(GeoJsonConstants.Fields.COORDINATES)));
+        return this.geometryFactory.createPoint(deserializeCoordinate((List) node.get(GeoBSONConstants.COORDINATES)));
     }
 
     private Polygon deserializePolygon(BSONObject node) {
-        return deserializeLinearRings((List) node.get(GeoJsonConstants.Fields.COORDINATES));
+        return deserializeLinearRings((List) node.get(GeoBSONConstants.COORDINATES));
     }
 
     private MultiPolygon deserializeMultiPolygon(BSONObject node) {
-        List coordinates = (List) node.get(GeoJsonConstants.Fields.COORDINATES);
+        List coordinates = (List) node.get(GeoBSONConstants.COORDINATES);
         Polygon[] polygons = new Polygon[coordinates.size()];
         for (int i = 0; i != coordinates.size(); ++i) {
             polygons[i] = deserializeLinearRings((List) coordinates.get(i));
@@ -104,11 +99,11 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private MultiPoint deserializeMultiPoint(BSONObject node) {
-        return this.geometryFactory.createMultiPointFromCoords(deserializeCoordinates((List) node.get(GeoJsonConstants.Fields.COORDINATES)));
+        return this.geometryFactory.createMultiPointFromCoords(deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES)));
     }
 
     private GeometryCollection deserializeGeometryCollection(BSONObject node) {
-        List geometries = (List) node.get(GeoJsonConstants.Fields.GEOMETRIES);
+        List geometries = (List) node.get(GeoBSONConstants.GEOMETRIES);
         Geometry[] geom = new Geometry[geometries.size()];
         for (int i = 0; i != geometries.size(); ++i) {
             geom[i] = deserializeGeometry((BSONObject) geometries.get(i));
@@ -117,7 +112,7 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private MultiLineString deserializeMultiLineString(BSONObject node) {
-        LineString[] lineStrings = lineStringsFromJson((List) node.get(GeoJsonConstants.Fields.COORDINATES));
+        LineString[] lineStrings = lineStringsFromJson((List) node.get(GeoBSONConstants.COORDINATES));
         return this.geometryFactory.createMultiLineString(lineStrings);
     }
 
@@ -131,7 +126,7 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private LineString deserializeLineString(BSONObject node) {
-        return this.geometryFactory.createLineString(deserializeCoordinates((List) node.get(GeoJsonConstants.Fields.COORDINATES)));
+        return this.geometryFactory.createLineString(deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES)));
     }
 
     private Coordinate[] deserializeCoordinates(List node) {
