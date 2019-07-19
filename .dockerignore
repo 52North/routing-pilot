@@ -7,5 +7,4 @@ docker-compose.yml
 NOTICE
 LICENSE
 README.md
-
-
+.env-template
