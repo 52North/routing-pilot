@@ -3,6 +3,7 @@ services:
   here-api:
     image: ogc/routing-api:latest
     build:
+      context: ./
       dockerfile: api.Dockerfile
     ports:
       - 8000:8000
@@ -12,11 +13,12 @@ services:
       - wps
       - mongo
     environment:
-      SERVER_PORT: 8000
-      ROUTING_ENDPOINT: http://wps:8080/rest
+      ROUTING_ENDPOINT: http://wps:8080/rest/
       ROUTING_PROCESS: org.n52.routing.here
       SPRING_DATA_MONGODB_HOST: mongo
       SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_SERVER_PORT: 8000
+      SPRING_SERVER_SERVLET_CONTEXTPATH: /
 
   mongo:
     image: mongo:latest
@@ -25,6 +27,7 @@ services:
 
   wps:
     build:
+      context: ./
       dockerfile: wps.Dockerfile
     image: ogc/routing-wps:latest
     ports:
