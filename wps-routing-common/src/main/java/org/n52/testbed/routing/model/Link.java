@@ -16,6 +16,7 @@
  */
 package org.n52.testbed.routing.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
  * Link
  */
 @Validated
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Link implements Serializable {
     private static final long serialVersionUID = 1932377045771809832L;
     @JsonProperty("href")

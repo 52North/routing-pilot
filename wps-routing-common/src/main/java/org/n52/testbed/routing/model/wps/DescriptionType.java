@@ -16,6 +16,7 @@
  */
 package org.n52.testbed.routing.model.wps;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.n52.testbed.routing.model.Link;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import java.util.Objects;
  * DescriptionType
  */
 @Validated
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DescriptionType {
     @JsonProperty("id")
     private String id;

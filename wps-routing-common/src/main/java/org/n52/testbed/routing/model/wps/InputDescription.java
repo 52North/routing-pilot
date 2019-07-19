@@ -27,7 +27,7 @@ import java.util.Objects;
 @Validated
 public class InputDescription extends DescriptionType {
     @JsonProperty("input")
-    private DataTypeDescription input;
+    private Object input;
 
     @JsonProperty("minOccurs")
     private Integer minOccurs;
@@ -35,11 +35,11 @@ public class InputDescription extends DescriptionType {
     @JsonProperty("maxOccurs")
     private Integer maxOccurs;
 
-    public DataTypeDescription getInput() {
+    public Object getInput() {
         return input;
     }
 
-    public void setInput(DataTypeDescription input) {
+    public void setInput(Object input) {
         this.input = input;
     }
 
@@ -69,9 +69,9 @@ public class InputDescription extends DescriptionType {
         }
         InputDescription that = (InputDescription) o;
         return Objects.equals(this.getInput(), that.getInput()) &&
-                Objects.equals(this.getMinOccurs(), that.getMinOccurs()) &&
-                Objects.equals(this.getMaxOccurs(), that.getMaxOccurs()) &&
-                super.equals(o);
+               Objects.equals(this.getMinOccurs(), that.getMinOccurs()) &&
+               Objects.equals(this.getMaxOccurs(), that.getMaxOccurs()) &&
+               super.equals(o);
     }
 
     @Override

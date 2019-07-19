@@ -38,7 +38,6 @@ import org.n52.testbed.routing.model.routing.RouteInfo;
 import org.n52.testbed.routing.model.routing.RouteOverviewProperties;
 import org.n52.testbed.routing.model.routing.RouteStartOrEndProperties;
 import org.n52.testbed.routing.model.wps.ComplexData;
-import org.n52.testbed.routing.model.wps.Data;
 import org.n52.testbed.routing.model.wps.Execute;
 import org.n52.testbed.routing.model.wps.Format;
 import org.n52.testbed.routing.model.wps.Formats;
@@ -55,6 +54,7 @@ import org.n52.testbed.routing.model.wps.ResultValue;
 import org.n52.testbed.routing.model.wps.Status;
 import org.n52.testbed.routing.model.wps.StatusInfo;
 import org.n52.testbed.routing.model.wps.TransmissionMode;
+import org.n52.testbed.routing.model.wps.ValueType;
 import org.n52.testbed.routing.persistence.MongoRoute;
 import org.n52.testbed.routing.persistence.RouteRepository;
 import org.slf4j.Logger;
@@ -175,25 +175,33 @@ public class RouteService {
     }
 
     private void convertToInternalExecute(Execute execute) {
-
         Map<String, Input> inputs = execute.getInputMap();
         if (inputs.containsKey(Inputs.WAYPOINTS)) {
-
-            MultiPoint waypoints = createMultiPoint(inputs.get(Inputs.WAYPOINTS).getInput().asComplex().getValue());
+            Object input = inputs.get(Inputs.WAYPOINTS).getInput();
+            MultiPoint waypoints = createMultiPoint(createComplexData(input).getValue().getInlineValue());
             Format geoJsonFormat = new Format(MediaTypes.APPLICATION_GEO_JSON);
 
             MultiPoint intermediates = getIntermediatePoints(waypoints);
             if (!intermediates.isEmpty()) {
                 inputs.put(Inputs.INTERMEDIATES,
                            new Input(Inputs.INTERMEDIATES,
-                                     new ComplexData(intermediates, geoJsonFormat)));
+                                     new ComplexData(newInlineValue(intermediates),
+                                                     geoJsonFormat)));
             }
 
-            inputs.put(Inputs.START, new Input(Inputs.START, new ComplexData(getStartPoint(waypoints), geoJsonFormat)));
-            inputs.put(Inputs.END, new Input(Inputs.END, new ComplexData(getEndPoint(waypoints), geoJsonFormat)));
+            inputs.put(Inputs.START, new Input(Inputs.START,
+                                               new ComplexData(newInlineValue(getStartPoint(waypoints)),
+                                                               geoJsonFormat)));
+            inputs.put(Inputs.END, new Input(Inputs.END,
+                                             new ComplexData(newInlineValue(getEndPoint(waypoints)),
+                                                             geoJsonFormat)));
             inputs.remove(Inputs.WAYPOINTS);
             execute.setInputs(new ArrayList<>(inputs.values()));
         }
+    }
+
+    private ValueType newInlineValue(Object value) {
+        return new ValueType().inlineValue(value);
     }
 
     private RouteDefinition createRouteDefinitionFromExecute(Execute execute) {
@@ -212,11 +220,31 @@ public class RouteService {
 
     }
 
+    private ComplexData createComplexData(Object input) {
+        if (input == null) {
+            return null;
+        }
+        return objectMapper.convertValue(input, ComplexData.class);
+    }
+
+    private LiteralData createLiteralData(Object input) {
+        if (input == null) {
+            return null;
+        }
+        return objectMapper.convertValue(input, LiteralData.class);
+    }
+
     private MultiPoint createMultiPoint(Object x) {
+        if (x == null) {
+            return null;
+        }
         return objectMapper.convertValue(x, MultiPoint.class);
     }
 
     private MultiPolygon createMultiPolygon(Object x) {
+        if (x == null) {
+            return null;
+        }
         return objectMapper.convertValue(x, MultiPolygon.class);
     }
 
@@ -226,14 +254,14 @@ public class RouteService {
 
     private <T> void convertLiteralValue(String input, Map<String, Input> inputs,
                                          Function<String, T> converter, Consumer<T> consumer) {
-        Optional.ofNullable(inputs.get(input)).map(Input::getInput).filter(Data::isLiteral).map(Data::asLiteral)
+        Optional.ofNullable(inputs.get(input)).map(Input::getInput).map(this::createLiteralData)
                 .map(LiteralData::getValue).map(converter).ifPresent(consumer);
     }
 
     private <T> void convertComplexValue(String input, Map<String, Input> inputs, Function<Object, T> converter,
                                          Consumer<T> consumer) {
-        Optional.ofNullable(inputs.get(input)).map(Input::getInput).filter(Data::isComplex).map(Data::asComplex)
-                .map(ComplexData::getValue).map(converter).ifPresent(consumer);
+        Optional.ofNullable(inputs.get(input)).map(Input::getInput).map(this::createComplexData)
+                .map(ComplexData::getValue).map(ValueType::getInlineValue).map(converter).ifPresent(consumer);
     }
 
     private String execute(RouteDefinition routeDefinition) throws IOException {
@@ -355,12 +383,12 @@ public class RouteService {
 
     @NotNull
     private ComplexData getGeoJsonData(@NotNull Geometry x) {
-        return new ComplexData(x, Formats.GEO_JSON_FORMAT);
+        return new ComplexData(newInlineValue(x), Formats.GEO_JSON_FORMAT);
     }
 
     @NotNull
     private ComplexData getJsonData(@NotNull Object x) {
-        return new ComplexData(x, Formats.JSON_FORMAT);
+        return new ComplexData(newInlineValue(x), Formats.JSON_FORMAT);
     }
 
     private boolean isNotEmpty(@NotNull String x) {

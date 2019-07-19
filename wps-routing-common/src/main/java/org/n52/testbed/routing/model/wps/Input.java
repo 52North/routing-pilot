@@ -31,7 +31,7 @@ public class Input {
     private String id;
 
     @JsonProperty("input")
-    private Data input;
+    private Object input;
 
     public Input() {
     }
@@ -40,7 +40,7 @@ public class Input {
         this(id, null);
     }
 
-    public Input(String id, Data input) {
+    public Input(String id, Object input) {
         this.id = id;
         this.input = input;
     }
@@ -55,11 +55,11 @@ public class Input {
     }
 
     @NotNull
-    public Data getInput() {
+    public Object getInput() {
         return input;
     }
 
-    public void setInput(Data input) {
+    public void setInput(Object input) {
         this.input = input;
     }
 
@@ -73,7 +73,7 @@ public class Input {
         }
         Input that = (Input) o;
         return Objects.equals(this.getId(), that.getId()) &&
-                Objects.equals(this.getInput(), that.getInput());
+               Objects.equals(this.getInput(), that.getInput());
     }
 
     @Override

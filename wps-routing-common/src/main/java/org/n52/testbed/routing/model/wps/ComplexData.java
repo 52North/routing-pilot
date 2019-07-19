@@ -16,6 +16,7 @@
  */
 package org.n52.testbed.routing.model.wps;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 
@@ -27,9 +28,10 @@ import java.util.Objects;
  * ComplexData
  */
 @Validated
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ComplexData implements Data {
     @JsonProperty("value")
-    private Object value;
+    private ValueType value;
     @JsonProperty("format")
     private Format format;
 
@@ -37,7 +39,7 @@ public class ComplexData implements Data {
         this(null, format);
     }
 
-    public ComplexData(Object value) {
+    public ComplexData(ValueType value) {
         this(value, null);
     }
 
@@ -45,7 +47,7 @@ public class ComplexData implements Data {
         this(null, null);
     }
 
-    public ComplexData(Object value, Format format) {
+    public ComplexData(ValueType value, Format format) {
         this.value = value;
         this.format = format;
     }
@@ -61,11 +63,11 @@ public class ComplexData implements Data {
 
     @NotNull
     @Valid
-    public Object getValue() {
+    public ValueType getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(ValueType value) {
         this.value = value;
     }
 
@@ -89,7 +91,7 @@ public class ComplexData implements Data {
         }
         ComplexData that = (ComplexData) o;
         return Objects.equals(this.getValue(), that.getValue()) &&
-                Objects.equals(this.getFormat(), that.getFormat());
+               Objects.equals(this.getFormat(), that.getFormat());
     }
 
     @Override

@@ -23,9 +23,11 @@ import org.locationtech.jts.geom.Geometry;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Feature
@@ -38,7 +40,7 @@ public class Feature<F extends Feature<F>> implements Serializable {
     @JsonProperty("type")
     private final GeoJsonType type = GeoJsonType.FEATURE;
     @JsonProperty("properties")
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private Map<String, Object> properties;
     @JsonProperty("geometry")
     private Geometry geometry;
@@ -64,7 +66,7 @@ public class Feature<F extends Feature<F>> implements Serializable {
 
     public Feature(Object id, Geometry geometry, Map<String, Object> properties, List<Link> links) {
         this.id = id;
-        this.properties = properties;
+        this.properties = Optional.ofNullable(properties).orElseGet(HashMap::new);
         this.geometry = geometry;
         this.links = links;
     }
@@ -151,9 +153,9 @@ public class Feature<F extends Feature<F>> implements Serializable {
         @SuppressWarnings("unchecked")
         F feature = (F) o;
         return Objects.equals(this.type, feature.getType()) &&
-                Objects.equals(this.properties, feature.getProperties()) &&
-                Objects.equals(this.geometry, feature.getGeometry()) &&
-                Objects.equals(this.getLinks(), feature.getLinks());
+               Objects.equals(this.properties, feature.getProperties()) &&
+               Objects.equals(this.geometry, feature.getGeometry()) &&
+               Objects.equals(this.getLinks(), feature.getLinks());
 
     }
 

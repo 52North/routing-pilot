@@ -27,13 +27,13 @@ import java.util.Objects;
 @Validated
 public class OutputDescription extends DescriptionType {
     @JsonProperty("output")
-    private DataTypeDescription output;
+    private Object output;
 
-    public DataTypeDescription getOutput() {
+    public Object getOutput() {
         return output;
     }
 
-    public void setOutput(DataTypeDescription output) {
+    public void setOutput(Object output) {
         this.output = output;
     }
 
@@ -47,7 +47,7 @@ public class OutputDescription extends DescriptionType {
         }
         OutputDescription that = (OutputDescription) o;
         return Objects.equals(this.getOutput(), that.getOutput()) &&
-                super.equals(o);
+               super.equals(o);
     }
 
     @Override

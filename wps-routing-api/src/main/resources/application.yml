@@ -12,6 +12,7 @@ spring:
       database: routing
 
   jackson:
+    defaultPropertyInclusion: non_empty
     serialization:
       INDENT_OUTPUT: true
     time-zone: UTC

@@ -16,6 +16,7 @@
  */
 package org.n52.testbed.routing.model.wps;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 
@@ -26,6 +27,7 @@ import java.util.Objects;
  * LiteralData
  */
 @Validated
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LiteralData implements Data {
     @JsonProperty("value")
     private String value;
@@ -105,8 +107,8 @@ public class LiteralData implements Data {
         }
         LiteralData that = (LiteralData) o;
         return Objects.equals(this.getValue(), that.getValue()) &&
-                Objects.equals(this.getDataType(), that.getDataType()) &&
-                Objects.equals(this.getUom(), that.getUom());
+               Objects.equals(this.getDataType(), that.getDataType()) &&
+               Objects.equals(this.getUom(), that.getUom());
     }
 
     @Override
