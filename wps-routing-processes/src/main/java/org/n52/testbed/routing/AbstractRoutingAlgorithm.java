@@ -17,7 +17,6 @@
 package org.n52.testbed.routing;
 
 import org.locationtech.jts.geom.Point;
-import org.n52.javaps.algorithm.annotation.Execute;
 import org.n52.testbed.routing.model.routing.Preference;
 import org.n52.testbed.routing.model.routing.Route;
 
@@ -77,6 +76,5 @@ public abstract class AbstractRoutingAlgorithm implements RoutingAlgorithm {
     }
 
     protected abstract Route computeRoute() throws Exception;
-
 
 }

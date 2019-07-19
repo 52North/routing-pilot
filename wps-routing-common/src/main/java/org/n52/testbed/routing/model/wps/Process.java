@@ -58,7 +58,6 @@ public class Process extends ProcessSummary {
         this.outputs = outputs;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {

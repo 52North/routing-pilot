@@ -25,12 +25,11 @@ import retrofit2.Response;
 import java.io.IOException;
 
 public class HttpStatusError extends RuntimeException {
-
+    private static final long serialVersionUID = -7158896170454426289L;
     @JsonIgnore
     private final HttpStatus status;
     private final Object body;
     private final MediaType mediaType;
-
 
     public HttpStatusError(HttpStatus status, Throwable cause) {
         this.status = status;
@@ -52,22 +51,22 @@ public class HttpStatusError extends RuntimeException {
     }
 
     public HttpStatusError(Response<?> response) {
-        byte[] body = null;
-        MediaType mediaType = null;
+        byte[] bytes = null;
+        MediaType mt = null;
         this.status = HttpStatus.valueOf(response.code());
         ResponseBody responseBody = response.errorBody();
         if (responseBody != null) {
             okhttp3.MediaType contentType = responseBody.contentType();
             if (contentType != null) {
-                mediaType = MediaType.valueOf(contentType.toString());
+                mt = MediaType.valueOf(contentType.toString());
                 try {
-                    body = responseBody.bytes();
+                    bytes = responseBody.bytes();
                 } catch (IOException ignored) {
                 }
             }
         }
-        this.body = body != null ? body : this;
-        this.mediaType = body != null ? mediaType : MediaType.APPLICATION_JSON;
+        this.body = bytes != null ? bytes : this;
+        this.mediaType = bytes != null ? mt : MediaType.APPLICATION_JSON;
     }
 
     public static <T> Response<T> throwIfNotSuccessful(Response<T> response) {

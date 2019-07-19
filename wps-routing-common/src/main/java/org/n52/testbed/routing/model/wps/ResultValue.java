@@ -29,7 +29,7 @@ import java.util.Objects;
 @Validated
 public class ResultValue {
     @JsonProperty("inlineValue")
-    private Route inlineValue = null;
+    private Route inlineValue;
 
     @Valid
     public Route getInlineValue() {

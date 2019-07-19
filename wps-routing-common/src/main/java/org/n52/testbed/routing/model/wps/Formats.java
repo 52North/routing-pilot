@@ -17,7 +17,6 @@
 package org.n52.testbed.routing.model.wps;
 
 import org.n52.testbed.routing.model.MediaTypes;
-import org.n52.testbed.routing.model.wps.Format;
 
 public interface Formats {
 

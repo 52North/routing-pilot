@@ -26,7 +26,6 @@ public enum GeoJsonType {
     FEATURE("Feature"),
     FEATURE_COLLECTION("FeatureCollection");
 
-
     private String value;
 
     GeoJsonType(String value) {

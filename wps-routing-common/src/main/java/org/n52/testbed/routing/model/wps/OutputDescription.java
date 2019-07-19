@@ -27,7 +27,7 @@ import java.util.Objects;
 @Validated
 public class OutputDescription extends DescriptionType {
     @JsonProperty("output")
-    private DataTypeDescription output = null;
+    private DataTypeDescription output;
 
     public DataTypeDescription getOutput() {
         return output;

@@ -33,6 +33,9 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Scope("request")
     public UriComponentsBuilder uriComponentsBuilder(NativeWebRequest webRequest) {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+        if (request == null) {
+            return null;
+        }
         return ServletUriComponentsBuilder.fromServletMapping(request);
     }
 
@@ -45,6 +48,5 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .maxAge(3600)
                 .allowCredentials(true);
     }
-
 
 }

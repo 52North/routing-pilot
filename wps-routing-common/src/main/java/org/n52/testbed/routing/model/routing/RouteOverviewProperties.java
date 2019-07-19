@@ -38,19 +38,19 @@ public class RouteOverviewProperties extends RouteFeatureProperties<RouteOvervie
     public static final String OBSTACLES = "obstacles";
 
     @JsonProperty(LENGTH)
-    private BigDecimal length = null;
+    private BigDecimal length;
 
     @JsonProperty(DURATION)
-    private BigDecimal duration = null;
+    private BigDecimal duration;
 
     @JsonProperty(MAX_HEIGHT)
-    private BigDecimal maxHeight = null;
+    private BigDecimal maxHeight;
 
     @JsonProperty(MAX_LOAD)
-    private BigDecimal maxLoad = null;
+    private BigDecimal maxLoad;
 
     @JsonProperty(OBSTACLES)
-    private String obstacles = null;
+    private String obstacles;
 
     @Override
     public RouteFeatureType getType() {

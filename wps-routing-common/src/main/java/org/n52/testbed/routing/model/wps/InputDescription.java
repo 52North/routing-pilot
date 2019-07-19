@@ -27,13 +27,13 @@ import java.util.Objects;
 @Validated
 public class InputDescription extends DescriptionType {
     @JsonProperty("input")
-    private DataTypeDescription input = null;
+    private DataTypeDescription input;
 
     @JsonProperty("minOccurs")
-    private Integer minOccurs = null;
+    private Integer minOccurs;
 
     @JsonProperty("maxOccurs")
-    private Integer maxOccurs = null;
+    private Integer maxOccurs;
 
     public DataTypeDescription getInput() {
         return input;

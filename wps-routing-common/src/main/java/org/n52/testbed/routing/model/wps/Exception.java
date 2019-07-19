@@ -17,6 +17,7 @@
 package org.n52.testbed.routing.model.wps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotNull;
@@ -26,12 +27,13 @@ import java.util.Objects;
  * Exception
  */
 @Validated
+@SuppressFBWarnings("NM_CLASS_NOT_EXCEPTION")
 public class Exception {
     @JsonProperty("code")
-    private String code = null;
+    private String code;
 
     @JsonProperty("description")
-    private String description = null;
+    private String description;
 
     public Exception code(String code) {
         this.code = code;

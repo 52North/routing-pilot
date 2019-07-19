@@ -30,7 +30,7 @@ import java.util.Objects;
 public class LiteralDataTypeDescription implements DataTypeDescription {
     @JsonProperty("literalDataDomains")
     @Valid
-    private List<LiteralDataDomain> literalDataDomains = null;
+    private List<LiteralDataDomain> literalDataDomains;
 
     @Valid
     public List<LiteralDataDomain> getLiteralDataDomains() {
@@ -40,7 +40,6 @@ public class LiteralDataTypeDescription implements DataTypeDescription {
     public void setLiteralDataDomains(List<LiteralDataDomain> literalDataDomains) {
         this.literalDataDomains = literalDataDomains;
     }
-
 
     @Override
     public boolean equals(java.lang.Object o) {

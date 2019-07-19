@@ -20,6 +20,7 @@ import org.n52.javaps.io.complex.ComplexData;
 import org.n52.testbed.routing.model.routing.Route;
 
 public class RouteData implements ComplexData<Route> {
+    private static final long serialVersionUID = -7068556659798603829L;
     private final Route payload;
 
     public RouteData(Route payload) {

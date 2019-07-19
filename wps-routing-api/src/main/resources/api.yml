@@ -6,8 +6,8 @@ openapi: 3.0.1
 # 2019-06-18 Update API and the Route Exchange Model (#2, #4, #5, #6, #8)
 # Added by API Auto Mocking Plugin
 servers:
-   - description: SwaggerHub API Auto Mocking
-     url: https://virtserver.swaggerhub.com/cportele/wps-routing-api/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/cportele/wps-routing-api/1.0.0
 info:
   title: OGC Routing Pilot - WPS Routing API (DRAFT)
   version: "1.0.0"
@@ -485,8 +485,8 @@ paths:
           description: The route definition.
           content:
             application/json:
-                schema:
-                  $ref: '#/components/schemas/routeDefinition'
+              schema:
+                $ref: '#/components/schemas/routeDefinition'
         '404':
           $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
         '500':
@@ -507,8 +507,8 @@ paths:
             Information about the available processes
           content:
             application/json:
-                schema:
-                  $ref: '#/components/schemas/processCollection'
+              schema:
+                $ref: '#/components/schemas/processCollection'
         '500':
           $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/ServerError'
   '/processes/{processId}':
@@ -524,8 +524,8 @@ paths:
           description: The description of the process.
           content:
             application/json:
-                schema:
-                  $ref: '#/components/schemas/processOffering'
+              schema:
+                $ref: '#/components/schemas/processOffering'
         '404':
           $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
         '500':
@@ -618,8 +618,8 @@ paths:
           description: The result of a job.
           content:
             application/json:
-                schema:
-                  $ref: '#/components/schemas/result'
+              schema:
+                $ref: '#/components/schemas/result'
         '404':
           $ref: 'https://api.swaggerhub.com/domains/cportele/ogc-api/1.0.0#/components/responses/NotFound'
         '500':
@@ -1132,7 +1132,7 @@ components:
     statusInfo:
       type: object
       required:
-          - status
+        - status
       properties:
         status:
           $ref: '#/components/schemas/statusEnum'
@@ -1313,10 +1313,10 @@ components:
     literalDataDomain:
       allOf:
         - oneOf:
-          - $ref: '#/components/schemas/allowedValues'
-          - $ref: '#/components/schemas/allowedRanges'
-          - $ref: '#/components/schemas/anyValue'
-          - $ref: '#/components/schemas/valuesReference'
+            - $ref: '#/components/schemas/allowedValues'
+            - $ref: '#/components/schemas/allowedRanges'
+            - $ref: '#/components/schemas/anyValue'
+            - $ref: '#/components/schemas/valuesReference'
         - type: object
           properties:
             defaultValue:
@@ -1373,7 +1373,7 @@ components:
           items:
             $ref: '#/components/schemas/range'
     anyValue:
-      type : object
+      type: object
       properties:
         anyValue:
           type: boolean

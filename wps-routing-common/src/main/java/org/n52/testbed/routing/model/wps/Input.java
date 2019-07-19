@@ -28,10 +28,10 @@ import java.util.Objects;
 @Validated
 public class Input {
     @JsonProperty("id")
-    private String id = null;
+    private String id;
 
     @JsonProperty("input")
-    private Data input = null;
+    private Data input;
 
     public Input() {
     }

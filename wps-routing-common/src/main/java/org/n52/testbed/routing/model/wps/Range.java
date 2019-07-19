@@ -27,16 +27,16 @@ import java.util.Objects;
 @Validated
 public class Range {
     @JsonProperty("minimumValue")
-    private String minimumValue = null;
+    private String minimumValue;
 
     @JsonProperty("maximumValue")
-    private String maximumValue = null;
+    private String maximumValue;
 
     @JsonProperty("spacing")
-    private String spacing = null;
+    private String spacing;
 
     @JsonProperty("rangeClosure")
-    private RangeClosure rangeClosure = null;
+    private RangeClosure rangeClosure;
 
     public String getMinimumValue() {
         return minimumValue;

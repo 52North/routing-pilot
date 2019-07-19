@@ -31,19 +31,19 @@ import java.util.Objects;
 @Validated
 public class ProcessSummary extends DescriptionType {
     @JsonProperty("version")
-    private String version = null;
+    private String version;
 
     @JsonProperty("jobControlOptions")
     @Valid
-    private List<JobControlOptions> jobControlOptions = null;
+    private List<JobControlOptions> jobControlOptions;
 
     @JsonProperty("outputTransmission")
     @Valid
-    private List<TransmissionMode> outputTransmission = null;
+    private List<TransmissionMode> outputTransmission;
 
     @JsonProperty("links")
     @Valid
-    private List<Link> links = null;
+    private List<Link> links;
 
     @NotNull
     public String getVersion() {
@@ -99,7 +99,8 @@ public class ProcessSummary extends DescriptionType {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getVersion(), getJobControlOptions(), getOutputTransmission(), getLinks(), super.hashCode());
+        return Objects.hash(getVersion(), getJobControlOptions(),
+                            getOutputTransmission(), getLinks(), super.hashCode());
     }
 
 }

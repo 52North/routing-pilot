@@ -16,7 +16,6 @@
  */
 package org.n52.testbed.routing.api.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.n52.testbed.routing.client.OgcProcessingApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

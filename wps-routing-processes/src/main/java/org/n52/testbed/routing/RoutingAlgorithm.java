@@ -32,16 +32,21 @@ import org.n52.testbed.routing.model.wps.Outputs;
 import java.util.Optional;
 
 public interface RoutingAlgorithm {
-    @ComplexInput(identifier = Inputs.START, title = "Start Point", abstrakt = "The starting point of the route.", binding = PointData.class)
+    @ComplexInput(identifier = Inputs.START, title = "Start Point", abstrakt = "The starting point of the route.",
+                  binding = PointData.class)
     void setStartPoint(Point startPoint);
 
-    @ComplexInput(identifier = Inputs.END, title = "End point", abstrakt = "The end point of the route.", binding = PointData.class)
+    @ComplexInput(identifier = Inputs.END, title = "End point", abstrakt = "The end point of the route.",
+                  binding = PointData.class)
     void setEndPoint(Point endPoint);
 
-    @LiteralInput(identifier = Inputs.NAME, title = "The name", abstrakt = "The name of the route.", minOccurs = 0, maxOccurs = 1, binding = LiteralStringType.class)
+    @LiteralInput(identifier = Inputs.NAME, title = "The name", abstrakt = "The name of the route.", minOccurs = 0,
+                  maxOccurs = 1, binding = LiteralStringType.class)
     void setName(String name);
 
-    @LiteralInput(identifier = Inputs.PREFERENCE, title = "Preference", abstrakt = "The routing preference.", minOccurs = 0, maxOccurs = 1, allowedValues = {"fastest", "shortest"}, binding = LiteralStringType.class)
+    @LiteralInput(identifier = Inputs.PREFERENCE, title = "Preference", abstrakt = "The routing preference.",
+                  minOccurs = 0, maxOccurs = 1, allowedValues = {"fastest", "shortest"},
+                  binding = LiteralStringType.class)
     default void setPreference(String preference) {
         setPreference(Optional.ofNullable(preference).map(Preference::fromValue).orElse(Preference.FASTEST));
     }
@@ -51,6 +56,7 @@ public interface RoutingAlgorithm {
     @Execute
     void execute() throws Exception;
 
-    @ComplexOutput(identifier = Outputs.ROUTE, title = "The Route.", abstrakt = "The computed route.", binding = RouteData.class)
+    @ComplexOutput(identifier = Outputs.ROUTE, title = "The Route.", abstrakt = "The computed route.",
+                   binding = RouteData.class)
     Route getRoute();
 }

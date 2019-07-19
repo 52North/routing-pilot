@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 public class RouteFeature extends Feature<RouteFeature> {
+    private static final long serialVersionUID = 7485879199206601838L;
+
     public RouteFeature() {
     }
 

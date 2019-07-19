@@ -20,7 +20,16 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.Optional;
 
@@ -79,7 +88,6 @@ public class JtsModule extends SimpleModule {
         this.includeBoundingBox = Optional.ofNullable(includeBoundingBox).orElseGet(IncludeBoundingBox::never);
     }
 
-
     @Override
     public void setupModule(SetupContext context) {
         JsonDeserializer<Geometry> deserializer = getDeserializer();
@@ -91,10 +99,10 @@ public class JtsModule extends SimpleModule {
         addDeserializer(MultiPoint.class, new TypeSafeJsonDeserializer<>(MultiPoint.class, deserializer));
         addDeserializer(MultiLineString.class, new TypeSafeJsonDeserializer<>(MultiLineString.class, deserializer));
         addDeserializer(MultiPolygon.class, new TypeSafeJsonDeserializer<>(MultiPolygon.class, deserializer));
-        addDeserializer(GeometryCollection.class, new TypeSafeJsonDeserializer<>(GeometryCollection.class, deserializer));
+        addDeserializer(GeometryCollection.class,
+                        new TypeSafeJsonDeserializer<>(GeometryCollection.class, deserializer));
         super.setupModule(context);
     }
-
 
     private JsonSerializer<Geometry> getSerializer() {
         return new GeometrySerializer(this.includeBoundingBox);

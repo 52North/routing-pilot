@@ -23,14 +23,18 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
- * The time of departure or arrival. The default value is now (departure).  Support for this parameter is not required and the parameter may be removed from the API definition, if conformance class **&#x27;time&#x27;** is not listed in the conformance declaration under &#x60;/conformance&#x60;.
+ * The time of departure or arrival. The default value is now (departure).  Support for this parameter is not required
+ * and the parameter may be removed from the API definition, if conformance class **&#x27;time&#x27;** is not listed in
+ * the conformance declaration under &#x60;/conformance&#x60;.
  */
 @Validated
-public class When {
+public class When implements Serializable {
+    private static final long serialVersionUID = -5246276867833136226L;
     @JsonProperty("timestamp")
     private OffsetDateTime timestamp;
 
@@ -66,11 +70,15 @@ public class When {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof When)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof When)) {
+            return false;
+        }
         When when = (When) o;
         return Objects.equals(getTimestamp(), when.getTimestamp()) &&
-                getType() == when.getType();
+               getType() == when.getType();
     }
 
     @Override

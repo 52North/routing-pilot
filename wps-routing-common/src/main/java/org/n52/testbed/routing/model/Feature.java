@@ -22,6 +22,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,8 +31,8 @@ import java.util.Objects;
  * Feature
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Feature<F extends Feature<F>> {
-
+public class Feature<F extends Feature<F>> implements Serializable {
+    private static final long serialVersionUID = 2368303759089693613L;
     @JsonProperty("id")
     private Object id;
     @JsonProperty("type")
@@ -56,7 +57,6 @@ public class Feature<F extends Feature<F>> {
     public Feature(Geometry geometry, Map<String, Object> properties) {
         this(null, geometry, properties);
     }
-
 
     public Feature(Object id, Geometry geometry, Map<String, Object> properties) {
         this(id, geometry, properties, null);
@@ -106,7 +106,6 @@ public class Feature<F extends Feature<F>> {
     public void setLinks(List<Link> links) {
         this.links = links;
     }
-
 
     @NotNull
     public GeoJsonType getType() {

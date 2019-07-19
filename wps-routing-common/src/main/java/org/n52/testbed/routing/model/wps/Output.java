@@ -28,11 +28,11 @@ import java.util.Objects;
 @Validated
 public class Output {
     @JsonProperty("id")
-    private String id = null;
+    private String id;
     @JsonProperty("transmissionMode")
-    private TransmissionMode transmissionMode = null;
+    private TransmissionMode transmissionMode;
     @JsonProperty("format")
-    private Format format = null;
+    private Format format;
 
     @Valid
     public Format getFormat() {

@@ -25,6 +25,8 @@ import java.math.BigDecimal;
 
 public interface SupportsMaxWeight extends RoutingAlgorithm {
 
-    @LiteralInput(identifier = Inputs.MAX_WEIGHT, title = "Maximum Weight", abstrakt = "The maximum weight the vehicle has.", minOccurs = 0, maxOccurs = 1, uom = Units.TON, binding = LiteralDecimalType.class)
+    @LiteralInput(identifier = Inputs.MAX_WEIGHT, title = "Maximum Weight",
+                  abstrakt = "The maximum weight the vehicle has.", minOccurs = 0, maxOccurs = 1, uom = Units.TON,
+                  binding = LiteralDecimalType.class)
     void setMaxWeight(BigDecimal maxWeight);
 }

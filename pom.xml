@@ -378,6 +378,11 @@
                 <artifactId>java-dotenv</artifactId>
                 <version>5.1.1</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-annotations</artifactId>
+                <version>3.1.12</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

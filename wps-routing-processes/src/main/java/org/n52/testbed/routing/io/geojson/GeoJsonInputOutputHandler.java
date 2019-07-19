@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GeoJsonInputOutputHandler extends AbstractJacksonInputOutputHandler {
+public final class GeoJsonInputOutputHandler extends AbstractJacksonInputOutputHandler {
 
     private static final Format GEO_JSON_FORMAT = new Format(MediaTypes.APPLICATION_GEO_JSON);
     private static final HashSet<Format> SUPPORTED_FORMATS = new HashSet<>(Arrays.asList(GEO_JSON_FORMAT, JSON_FORMAT));
@@ -47,7 +47,7 @@ public class GeoJsonInputOutputHandler extends AbstractJacksonInputOutputHandler
     @Override
     protected ObjectMapper configureObjectMapper() {
         return super.configureObjectMapper()
-                .registerModule(new JtsModule(IncludeBoundingBox.never().forMultiGeometry()));
+                    .registerModule(new JtsModule(IncludeBoundingBox.never().forMultiGeometry()));
     }
 
     @Override

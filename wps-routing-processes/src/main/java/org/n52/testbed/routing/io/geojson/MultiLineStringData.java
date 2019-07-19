@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.MultiLineString;
 
 public class MultiLineStringData implements GeoJsonData<MultiLineString> {
+    private static final long serialVersionUID = 6971562074306563763L;
     private final MultiLineString payload;
 
     public MultiLineStringData(MultiLineString payload) {

@@ -20,7 +20,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * ready to visualize (with all the coordinates that allow visualization of the shape of the segment) or summary (with just start and end coordinates of the segment)
+ * ready to visualize (with all the coordinates that allow visualization of the shape of the segment) or summary (with
+ * just start and end coordinates of the segment)
  */
 public enum LevelOfDetail {
     SUMMARY("summary"),

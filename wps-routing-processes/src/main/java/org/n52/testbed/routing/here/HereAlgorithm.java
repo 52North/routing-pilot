@@ -19,19 +19,45 @@ package org.n52.testbed.routing.here;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapLikeType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import okhttp3.*;
-import org.locationtech.jts.geom.*;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
 import org.n52.javaps.algorithm.ExecutionException;
 import org.n52.javaps.algorithm.annotation.Algorithm;
-import org.n52.testbed.routing.*;
+import org.n52.testbed.routing.AbstractRoutingAlgorithm;
+import org.n52.testbed.routing.SupportsIntermediates;
+import org.n52.testbed.routing.SupportsMaxHeight;
+import org.n52.testbed.routing.SupportsMaxWeight;
+import org.n52.testbed.routing.SupportsObstacles;
+import org.n52.testbed.routing.SupportsWhen;
+import org.n52.testbed.routing.model.routing.Instruction;
+import org.n52.testbed.routing.model.routing.LevelOfDetail;
+import org.n52.testbed.routing.model.routing.Preference;
 import org.n52.testbed.routing.model.routing.Route;
-import org.n52.testbed.routing.model.routing.*;
+import org.n52.testbed.routing.model.routing.RouteFeature;
+import org.n52.testbed.routing.model.routing.RouteFeatureProperties;
+import org.n52.testbed.routing.model.routing.RouteFeatureType;
+import org.n52.testbed.routing.model.routing.RouteOverviewProperties;
+import org.n52.testbed.routing.model.routing.RouteSegmentProperties;
+import org.n52.testbed.routing.model.routing.RouteStartOrEndProperties;
+import org.n52.testbed.routing.model.routing.When;
 import org.n52.testbed.routing.model.wps.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -41,13 +67,13 @@ import static java.util.stream.Collectors.toList;
 @Algorithm(identifier = "org.n52.routing.here", version = "1.0.0")
 public class HereAlgorithm extends AbstractRoutingAlgorithm
         implements SupportsIntermediates, SupportsObstacles, SupportsMaxHeight, SupportsMaxWeight, SupportsWhen {
-    private static final HttpUrl BASE_URL = HttpUrl.get("https://route.api.here.com/routing/7.2/");
-    private static final String APP_CODE = "app_code";
-    private static final String APP_ID = "app_id";
     public static final String HERE_APP_ID_PROPERTY = "here.app.id";
     public static final String HERE_APP_CODE_PROPERTY = "here.app.code";
     public static final String HERE_APP_CODE_ENV_VARIABLE = "HERE_APP_CODE";
     public static final String HERE_APP_ID_ENV_VARIABLE = "HERE_APP_ID";
+    private static final HttpUrl BASE_URL = HttpUrl.get("https://route.api.here.com/routing/7.2/");
+    private static final String APP_CODE = "app_code";
+    private static final String APP_ID = "app_id";
     private MultiPoint intermediates;
     private MultiPolygon obstacles;
     private BigDecimal maxHeight;
@@ -90,10 +116,10 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         String appCode = requireProperty(HERE_APP_CODE_ENV_VARIABLE, HERE_APP_CODE_PROPERTY);
         String appId = requireProperty(HERE_APP_ID_ENV_VARIABLE, HERE_APP_ID_PROPERTY);
         return new OkHttpClient.Builder()
-                .addInterceptor(new AppCredentialInterceptor(appId, appCode))
-                .retryOnConnectionFailure(true)
-                .followRedirects(true)
-                .build();
+                       .addInterceptor(new AppCredentialInterceptor(appId, appCode))
+                       .retryOnConnectionFailure(true)
+                       .followRedirects(true)
+                       .build();
     }
 
     private String requireProperty(String envName, String propName) {
@@ -103,12 +129,11 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         }
         if (value == null || value.isEmpty()) {
             String message = String.format("neither system property %s nor environment variable %s is set",
-                    propName, envName);
+                                           propName, envName);
             throw new RuntimeException(message);
         }
         return value;
     }
-
 
     @Override
     public Route computeRoute() throws IOException, ExecutionException {
@@ -120,13 +145,13 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
 
     }
 
-    private HttpUrl buildRequestUrl() {
+    private HttpUrl buildRequestUrl() throws ExecutionException {
         HttpUrl.Builder urlBuilder = BASE_URL.newBuilder().addPathSegment("calculateroute.json");
 
         HereApi.TransportMode transportMode = (this.maxWeight != null || this.maxHeight != null)
-                ? HereApi.TransportMode.truck : HereApi.TransportMode.car;
+                                              ? HereApi.TransportMode.truck : HereApi.TransportMode.car;
         HereApi.RoutingType routingType = getPreference() == Preference.SHORTEST
-                ? HereApi.RoutingType.shortest : HereApi.RoutingType.fastest;
+                                          ? HereApi.RoutingType.shortest : HereApi.RoutingType.fastest;
 
         if (this.when != null) {
             switch (this.when.getType()) {
@@ -136,6 +161,8 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
                 case ARRIVAL:
                     urlBuilder.addQueryParameter("arrival", this.when.getTimestamp().toString());
                     break;
+                default:
+                    throw new ExecutionException("unsupported when type");
             }
         }
 
@@ -150,15 +177,16 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         }
 
         int idx = 0;
-        urlBuilder.addQueryParameter(String.format("waypoint%d", idx++), asWaypointParameter(getStartPoint()));
+        String waypointFormat = "waypoint%d";
+        urlBuilder.addQueryParameter(String.format(waypointFormat, idx++), asWaypointParameter(getStartPoint()));
         if (this.intermediates != null) {
             int n = this.intermediates.getNumGeometries();
             for (int i = 0; i < n; i++) {
-                urlBuilder.addQueryParameter(String.format("waypoint%d", idx++),
-                        asWaypointParameter((Point) this.intermediates.getGeometryN(i)));
+                urlBuilder.addQueryParameter(String.format(waypointFormat, idx++),
+                                             asWaypointParameter((Point) this.intermediates.getGeometryN(i)));
             }
         }
-        urlBuilder.addQueryParameter(String.format("waypoint%d", idx), asWaypointParameter(getEndPoint()));
+        urlBuilder.addQueryParameter(String.format(waypointFormat, idx), asWaypointParameter(getEndPoint()));
 
         urlBuilder.addQueryParameter("routeAttributes", getRouteAttributesParameter());
         urlBuilder.addQueryParameter("instructionFormat", getInstructionFormatParameter());
@@ -180,7 +208,7 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         }
 
         return objectMapper.readValue(execute.body().charStream(), HereApi.ResponseWrapper.class)
-                .getResponse().getRoute().iterator().next();
+                           .getResponse().getRoute().iterator().next();
     }
 
     private String getModeParameter(HereApi.TransportMode transportMode, HereApi.RoutingType routingType) {
@@ -193,8 +221,8 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
 
     private String getRouteAttributesParameter() {
         return Stream.of(HereApi.RouteAttributeType.summary,
-                HereApi.RouteAttributeType.shape, HereApi.RouteAttributeType.legs)
-                .map(Enum::toString).collect(joining(","));
+                         HereApi.RouteAttributeType.shape, HereApi.RouteAttributeType.legs)
+                     .map(HereApi.RouteAttributeType::toString).collect(joining(","));
     }
 
     private String getInstructionFormatParameter() {
@@ -208,7 +236,7 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
                 HereApi.RouteLegAttributeType.length,
                 HereApi.RouteLegAttributeType.travelTime,
                 HereApi.RouteLegAttributeType.shape)
-                .map(Enum::toString).collect(joining(","));
+                     .map(HereApi.RouteLegAttributeType::toString).collect(joining(","));
     }
 
     private String getManeuverAttributesParameter() {
@@ -219,7 +247,7 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
                 HereApi.ManeuverAttributeType.trafficTime,
                 HereApi.ManeuverAttributeType.direction,
                 HereApi.ManeuverAttributeType.roadName)
-                .map(Enum::toString).collect(joining(","));
+                     .map(HereApi.ManeuverAttributeType::toString).collect(joining(","));
     }
 
     private Route createRoute(HereApi.Route hereRoute) {
@@ -247,7 +275,7 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
 
     private Map<String, Object> createFeatureProperties(RouteFeatureProperties<?> properties) {
         MapLikeType type = TypeFactory.defaultInstance()
-                .constructMapLikeType(Map.class, String.class, Object.class);
+                                      .constructMapLikeType(Map.class, String.class, Object.class);
         return objectMapper.convertValue(properties, type);
     }
 
@@ -264,11 +292,11 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
 
     private List<RouteFeature> createSegments(HereApi.Route hereRoute) {
         return hereRoute.getLegs().stream()
-                .map(HereApi.Leg::getManeuvers)
-                .flatMap(List::stream)
-                .map(this::getRouteSegmentFromManeuver)
-                .filter(Objects::nonNull)
-                .collect(toList());
+                        .map(HereApi.Leg::getManeuvers)
+                        .flatMap(List::stream)
+                        .map(this::getRouteSegmentFromManeuver)
+                        .filter(Objects::nonNull)
+                        .collect(toList());
     }
 
     private RouteFeature getRouteSegmentFromManeuver(HereApi.Maneuver m) {
@@ -304,13 +332,13 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
 
     private String getAvoidAreasParameter(MultiPolygon obstacles) {
         return IntStream.range(0, obstacles.getNumGeometries())
-                .mapToObj(obstacles::getGeometryN)
-                .map(Geometry::getEnvelopeInternal)
-                .map(envelope -> {
-                    // topLeft;bottomRight
-                    return String.format(Locale.ROOT, "%f,%f;%f,%f", envelope.getMaxY(), envelope.getMinX(),
-                            envelope.getMinY(), envelope.getMaxX());
-                }).collect(joining("!"));
+                        .mapToObj(obstacles::getGeometryN)
+                        .map(Geometry::getEnvelopeInternal)
+                        .map(envelope -> {
+                            // topLeft;bottomRight
+                            return String.format(Locale.ROOT, "%f,%f;%f,%f", envelope.getMaxY(), envelope.getMinX(),
+                                                 envelope.getMinY(), envelope.getMaxX());
+                        }).collect(joining("!"));
     }
 
     private String asWaypointParameter(Point startPoint) {
@@ -321,7 +349,6 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         private final String appId;
         private final String appCode;
 
-
         AppCredentialInterceptor(String appId, String appCode) {
             this.appId = appId;
             this.appCode = appCode;
@@ -331,12 +358,11 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         public Response intercept(Interceptor.Chain chain) throws IOException {
             Request request = chain.request();
             HttpUrl url = request.url().newBuilder()
-                    .addQueryParameter(APP_ID, appId)
-                    .addQueryParameter(APP_CODE, appCode)
-                    .build();
+                                 .addQueryParameter(APP_ID, appId)
+                                 .addQueryParameter(APP_CODE, appCode)
+                                 .build();
             return chain.proceed(request.newBuilder().url(url).build());
         }
     }
-
 
 }

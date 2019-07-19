@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -57,7 +57,7 @@ public class Execute {
     }
 
     public Map<String, Input> getInputMap() {
-        return getInputs().stream().collect(toMap(Input::getId, identity()));
+        return getInputs().stream().collect(toMap(Input::getId, Function.identity()));
     }
 
     public void setInputs(List<Input> inputs) {
@@ -73,7 +73,6 @@ public class Execute {
     public void setOutputs(List<Output> outputs) {
         this.outputs = outputs;
     }
-
 
     @Override
     public boolean equals(java.lang.Object o) {

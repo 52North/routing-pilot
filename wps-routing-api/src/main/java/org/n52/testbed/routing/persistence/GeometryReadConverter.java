@@ -19,7 +19,18 @@ package org.n52.testbed.routing.persistence;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.mongodb.DBObject;
 import org.bson.BSONObject;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
@@ -50,7 +61,7 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
      */
     public GeometryReadConverter(GeometryFactory geometryFactory) {
         this.geometryFactory = Optional.ofNullable(geometryFactory)
-                .orElseGet(GeometryReadConverter::defaultGeometryFactory);
+                                       .orElseGet(GeometryReadConverter::defaultGeometryFactory);
     }
 
     @Override
@@ -86,24 +97,25 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private Polygon deserializePolygon(BSONObject node) {
-        return deserializeLinearRings((List) node.get(GeoBSONConstants.COORDINATES));
+        return deserializeLinearRings((List<?>) node.get(GeoBSONConstants.COORDINATES));
     }
 
     private MultiPolygon deserializeMultiPolygon(BSONObject node) {
-        List coordinates = (List) node.get(GeoBSONConstants.COORDINATES);
+        List<?> coordinates = (List<?>) node.get(GeoBSONConstants.COORDINATES);
         Polygon[] polygons = new Polygon[coordinates.size()];
         for (int i = 0; i != coordinates.size(); ++i) {
-            polygons[i] = deserializeLinearRings((List) coordinates.get(i));
+            polygons[i] = deserializeLinearRings((List<?>) coordinates.get(i));
         }
         return this.geometryFactory.createMultiPolygon(polygons);
     }
 
     private MultiPoint deserializeMultiPoint(BSONObject node) {
-        return this.geometryFactory.createMultiPointFromCoords(deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES)));
+        Coordinate[] coordinates = deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES));
+        return this.geometryFactory.createMultiPointFromCoords(coordinates);
     }
 
     private GeometryCollection deserializeGeometryCollection(BSONObject node) {
-        List geometries = (List) node.get(GeoBSONConstants.GEOMETRIES);
+        List<?> geometries = (List<?>) node.get(GeoBSONConstants.GEOMETRIES);
         Geometry[] geom = new Geometry[geometries.size()];
         for (int i = 0; i != geometries.size(); ++i) {
             geom[i] = deserializeGeometry((BSONObject) geometries.get(i));
@@ -116,7 +128,7 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
         return this.geometryFactory.createMultiLineString(lineStrings);
     }
 
-    private LineString[] lineStringsFromJson(List node) {
+    private LineString[] lineStringsFromJson(List<?> node) {
         LineString[] strings = new LineString[node.size()];
         for (int i = 0; i != node.size(); ++i) {
             Coordinate[] coordinates = deserializeCoordinates((List) node.get(i));
@@ -126,10 +138,11 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
     }
 
     private LineString deserializeLineString(BSONObject node) {
-        return this.geometryFactory.createLineString(deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES)));
+        Coordinate[] coordinates = deserializeCoordinates((List) node.get(GeoBSONConstants.COORDINATES));
+        return this.geometryFactory.createLineString(coordinates);
     }
 
-    private Coordinate[] deserializeCoordinates(List node) {
+    private Coordinate[] deserializeCoordinates(List<?> node) {
         Coordinate[] points = new Coordinate[node.size()];
         for (int i = 0; i != node.size(); ++i) {
             points[i] = deserializeCoordinate((List) node.get(i));
@@ -137,21 +150,21 @@ public class GeometryReadConverter implements Converter<DBObject, Geometry> {
         return points;
     }
 
-    private Polygon deserializeLinearRings(List node) {
-        LinearRing shell = deserializeLinearRing((List) node.get(0));
+    private Polygon deserializeLinearRings(List<?> node) {
+        LinearRing shell = deserializeLinearRing((List<?>) node.get(0));
         LinearRing[] holes = new LinearRing[node.size() - 1];
         for (int i = 1; i < node.size(); ++i) {
-            holes[i - 1] = deserializeLinearRing((List) node.get(i));
+            holes[i - 1] = deserializeLinearRing((List<?>) node.get(i));
         }
         return this.geometryFactory.createPolygon(shell, holes);
     }
 
-    private LinearRing deserializeLinearRing(List node) {
+    private LinearRing deserializeLinearRing(List<?> node) {
         Coordinate[] coordinates = deserializeCoordinates(node);
         return this.geometryFactory.createLinearRing(coordinates);
     }
 
-    private Coordinate deserializeCoordinate(List node) {
+    private Coordinate deserializeCoordinate(List<?> node) {
         if (node.size() < 2) {
             throw new IllegalArgumentException(String.format("Invalid number of ordinates: %d", node.size()));
         } else {

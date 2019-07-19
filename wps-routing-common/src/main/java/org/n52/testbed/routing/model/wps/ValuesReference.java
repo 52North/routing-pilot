@@ -41,8 +41,12 @@ public class ValuesReference implements ValueDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ValuesReference)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ValuesReference)) {
+            return false;
+        }
         ValuesReference that = (ValuesReference) o;
         return Objects.equals(getUri(), that.getUri());
     }

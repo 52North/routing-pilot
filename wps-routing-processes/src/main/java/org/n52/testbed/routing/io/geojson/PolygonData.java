@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.Polygon;
 
 public class PolygonData implements GeoJsonData<Polygon> {
+    private static final long serialVersionUID = -5981612823336998117L;
     private final Polygon payload;
 
     public PolygonData(Polygon payload) {

@@ -23,6 +23,7 @@ import org.n52.testbed.routing.model.wps.Inputs;
 
 public interface SupportsObstacles extends RoutingAlgorithm {
 
-    @ComplexInput(identifier = Inputs.OBSTACLES, title = "Obstacles", abstrakt = "Obstacles along the route.", minOccurs = 0, maxOccurs = 1, binding = MultiPolygonData.class)
+    @ComplexInput(identifier = Inputs.OBSTACLES, title = "Obstacles", abstrakt = "Obstacles along the route.",
+                  minOccurs = 0, maxOccurs = 1, binding = MultiPolygonData.class)
     void setObstacles(MultiPolygon obstacles);
 }

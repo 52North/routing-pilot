@@ -25,7 +25,6 @@ public enum RouteFeatureType {
     SEGMENT("segment"),
     START("start");
 
-
     private String value;
 
     RouteFeatureType(String value) {

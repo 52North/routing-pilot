@@ -19,9 +19,18 @@ package org.n52.testbed.routing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Main entry point.
+ */
 @SpringBootApplication
+@SuppressWarnings("UncommentedMain")
 public class Application {
 
+    /**
+     * Start the application.
+     *
+     * @param args The arguments.
+     */
     public static void main(String[] args) {
         SpringApplication.run(Application.class);
     }

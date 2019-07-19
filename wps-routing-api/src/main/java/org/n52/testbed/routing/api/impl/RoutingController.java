@@ -18,14 +18,28 @@ package org.n52.testbed.routing.api.impl;
 
 import org.n52.testbed.routing.api.DefaultApi;
 import org.n52.testbed.routing.api.Mode;
-import org.n52.testbed.routing.model.*;
+import org.n52.testbed.routing.model.ConformanceClasses;
+import org.n52.testbed.routing.model.Link;
+import org.n52.testbed.routing.model.LinkRelation;
+import org.n52.testbed.routing.model.MediaTypes;
 import org.n52.testbed.routing.model.routing.Route;
 import org.n52.testbed.routing.model.routing.RouteDefinition;
-import org.n52.testbed.routing.model.routing.Routes;
-import org.n52.testbed.routing.model.wps.Process;
-import org.n52.testbed.routing.model.wps.*;
-import org.n52.testbed.routing.model.wps.Inputs;
 import org.n52.testbed.routing.model.routing.RouteInfo;
+import org.n52.testbed.routing.model.routing.Routes;
+import org.n52.testbed.routing.model.wps.ComplexDataTypeDescription;
+import org.n52.testbed.routing.model.wps.ConfClasses;
+import org.n52.testbed.routing.model.wps.Execute;
+import org.n52.testbed.routing.model.wps.Format;
+import org.n52.testbed.routing.model.wps.FormatDescription;
+import org.n52.testbed.routing.model.wps.InputDescription;
+import org.n52.testbed.routing.model.wps.Inputs;
+import org.n52.testbed.routing.model.wps.JobCollection;
+import org.n52.testbed.routing.model.wps.LandingPage;
+import org.n52.testbed.routing.model.wps.Process;
+import org.n52.testbed.routing.model.wps.ProcessCollection;
+import org.n52.testbed.routing.model.wps.ProcessOffering;
+import org.n52.testbed.routing.model.wps.Result;
+import org.n52.testbed.routing.model.wps.StatusInfo;
 import org.n52.testbed.routing.service.RouteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -38,7 +52,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -53,7 +71,8 @@ public class RoutingController extends AbstractRoutingController implements Defa
     private static final String SELF_TITLE = "this document";
     private static final String SERVICE_TITLE = "The API definition";
     private static final String PROCESSES_TITLE = "The processes offered by this server";
-    private static final String CONFORMANCE_TITLE = "WPS 2.0 REST/JSON Binding Extension conformance classes implemented by this server";
+    private static final String CONFORMANCE_TITLE = "WPS 2.0 REST/JSON Binding Extension "
+                                                    + "conformance classes implemented by this server";
 
     @Autowired
     private RouteService service;
@@ -91,12 +110,13 @@ public class RoutingController extends AbstractRoutingController implements Defa
 
     @NotNull
     private List<Link> getRouteLinks(@NotNull String routeId) {
-        URI routeURI = getUriBuilder().path("/routes/{routeId}").build(routeId);
         URI definitionURI = getUriBuilder().path("/routes/{routeId}/definition").build(routeId);
-        return Arrays.asList(
-                new Link().rel(LinkRelation.SELF).type(MediaTypes.APPLICATION_GEO_JSON).href(routeURI.toASCIIString()),
-                new Link().rel(LinkRelation.DESCRIBED_BY).type(MediaTypes.APPLICATION_JSON).href(definitionURI.toASCIIString())
-        );
+        return Arrays.asList(new Link().rel(LinkRelation.SELF)
+                                       .type(MediaTypes.APPLICATION_GEO_JSON)
+                                       .href(createRouteLink(routeId).toASCIIString()),
+                             new Link().rel(LinkRelation.DESCRIBED_BY)
+                                       .type(MediaTypes.APPLICATION_JSON)
+                                       .href(definitionURI.toASCIIString()));
     }
 
     @Override
@@ -108,31 +128,36 @@ public class RoutingController extends AbstractRoutingController implements Defa
     public ResponseEntity<Routes> getRoutes() {
         Routes routes = new Routes();
         routes.setLinks(Stream.concat(Stream.of(getRoutesSelfLink()),
-                service.getRoutes().map(this::getRouteItemLink)).collect(toList()));
+                                      service.getRoutes().map(this::getRouteItemLink)).collect(toList()));
         return ResponseEntity.ok(routes);
     }
 
     @NotNull
     private Link getRoutesSelfLink() {
         return new Link().rel(LinkRelation.SELF)
-                .href(getUriBuilder().path("/routes").toUriString())
-                .type(MediaTypes.APPLICATION_JSON).title("this document");
+                         .href(getUriBuilder().path("/routes").toUriString())
+                         .type(MediaTypes.APPLICATION_JSON)
+                         .title(SELF_TITLE);
     }
 
     @NotNull
     private Link getRouteItemLink(@NotNull RouteInfo route) {
         Link link = new Link().rel(LinkRelation.ITEM).type(MediaTypes.APPLICATION_GEO_JSON);
         route.getTitle().ifPresent(link::setTitle);
-        link.href(getUriBuilder().path("/routes/{routeId}").build(route.getIdentifier()).toASCIIString());
+        link.href(createRouteLink(route.getIdentifier()).toASCIIString());
         return link;
+    }
+
+    private URI createRouteLink(@NotNull String routeId) {
+        return getUriBuilder().path("/routes/{routeId}").build(routeId);
     }
 
     @Override
     public ResponseEntity<Void> execute(@Valid Execute body) {
         RouteInfo routeAsync = service.createRouteAsync(body);
         URI newLocation = getUriBuilder()
-                .path("/processes/routing/jobs/{jobId}")
-                .build(routeAsync.getIdentifier());
+                                  .path("/processes/routing/jobs/{jobId}")
+                                  .build(routeAsync.getIdentifier());
         return created(newLocation);
     }
 
@@ -152,7 +177,8 @@ public class RoutingController extends AbstractRoutingController implements Defa
     @Override
     public ResponseEntity<ProcessOffering> getProcessDescription() {
         try {
-            Response<ProcessOffering> response = getOgcProcessingApi().getProcessDescription(getRoutingProcessId()).execute();
+            Response<ProcessOffering> response = getOgcProcessingApi()
+                                                         .getProcessDescription(getRoutingProcessId()).execute();
             if (!response.isSuccessful()) {
                 return copyFailure(response);
             }
@@ -168,14 +194,15 @@ public class RoutingController extends AbstractRoutingController implements Defa
             process.setInputs(Stream.concat(
                     Stream.of(createWaypointsDescription()),
                     process.getInputs().stream()
-                            .filter(x -> !x.getId().equals(Inputs.START))
-                            .filter(x -> !x.getId().equals(Inputs.END))
-                            .filter(x -> !x.getId().equals(Inputs.INTERMEDIATES)))
-                    .collect(toList()));
+                           .filter(x -> !x.getId().equals(Inputs.START))
+                           .filter(x -> !x.getId().equals(Inputs.END))
+                           .filter(x -> !x.getId().equals(Inputs.INTERMEDIATES)))
+                                    .collect(toList()));
             // replace the links with links to this service
             process.getLinks().forEach(link -> {
                 if (link.getRel().equals(LinkRelation.CANONICAL)) {
-                    link.setHref(getUriBuilder().path("processes/{processId}/jobs").build(ROUTING_PROCESS_ID).toASCIIString());
+                    link.setHref(getUriBuilder().path("processes/{processId}/jobs").build(ROUTING_PROCESS_ID)
+                                                .toASCIIString());
                 }
             });
             return ResponseEntity.ok(description);
@@ -197,28 +224,30 @@ public class RoutingController extends AbstractRoutingController implements Defa
         inputDescription.setMinOccurs(0);
         inputDescription.setMaxOccurs(1);
         inputDescription.setTitle("The route waypoints");
-        inputDescription.setDescription("A list of points along the route. At least two points have to be provided (start and end point).");
+        inputDescription.setDescription("A list of points along the route. At least two "
+                                        + "points have to be provided (start and end point).");
         return inputDescription;
     }
 
     @Override
     public ResponseEntity<ProcessCollection> getProcesses() {
         try {
-            Response<ProcessCollection> response = HttpStatusError.throwIfNotSuccessful(getOgcProcessingApi().getProcesses().execute());
+            Response<ProcessCollection> response = HttpStatusError.throwIfNotSuccessful(getOgcProcessingApi()
+                                                                                                .getProcesses()
+                                                                                                .execute());
             ProcessCollection processCollection = new ProcessCollection();
             Optional.ofNullable(response.body())
                     .map(ProcessCollection::getProcesses)
                     .map(List::stream)
-                    .map(stream -> stream
-                            .filter(process -> process.getId().equals(getRoutingProcessId()))
-                            .peek(process -> {
-                                process.setId(ROUTING_PROCESS_ID);
-                                process.getLinks().forEach(link -> {
-                                    if (link.getRel().equals(LinkRelation.CANONICAL)) {
-                                        link.setHref(getProcessUri(ROUTING_PROCESS_ID));
-                                    }
-                                });
-                            }).collect(toList()))
+                    .map(stream -> stream.filter(process -> process.getId().equals(getRoutingProcessId()))
+                                         .peek(process -> {
+                                             process.setId(ROUTING_PROCESS_ID);
+                                             process.getLinks().forEach(link -> {
+                                                 if (link.getRel().equals(LinkRelation.CANONICAL)) {
+                                                     link.setHref(getProcessUri(ROUTING_PROCESS_ID));
+                                                 }
+                                             });
+                                         }).collect(toList()))
                     .ifPresent(processCollection::setProcesses);
             return ResponseEntity.ok(processCollection);
         } catch (IOException e) {
@@ -351,10 +380,10 @@ public class RoutingController extends AbstractRoutingController implements Defa
     }
 
     private Set<String> getProcessInputs() throws IOException {
-        Response<ProcessOffering> response = getOgcProcessingApi().getProcessDescription(getRoutingProcessId()).execute();
+        Response<ProcessOffering> response = getOgcProcessingApi().getProcessDescription(getRoutingProcessId())
+                                                                  .execute();
         ProcessOffering processOffering = HttpStatusError.throwIfNotSuccessful(response).body();
         return processOffering.getProcess().getInputs().stream().map(InputDescription::getId).collect(toSet());
     }
-
 
 }

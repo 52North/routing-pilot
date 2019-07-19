@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.GeometryCollection;
 
 public class GeometryCollectionData implements GeoJsonData<GeometryCollection> {
+    private static final long serialVersionUID = 7093055868691003738L;
     private final GeometryCollection payload;
 
     public GeometryCollectionData(GeometryCollection payload) {

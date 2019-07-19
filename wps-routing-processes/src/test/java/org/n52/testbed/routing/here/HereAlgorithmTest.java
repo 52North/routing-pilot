@@ -30,7 +30,12 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.n52.javaps.engine.Engine;
 import org.n52.shetland.ogc.ows.OwsCode;
-import org.n52.shetland.ogc.wps.*;
+import org.n52.shetland.ogc.wps.DataTransmissionMode;
+import org.n52.shetland.ogc.wps.Format;
+import org.n52.shetland.ogc.wps.JobId;
+import org.n52.shetland.ogc.wps.OutputDefinition;
+import org.n52.shetland.ogc.wps.ResponseMode;
+import org.n52.shetland.ogc.wps.Result;
 import org.n52.shetland.ogc.wps.data.ProcessData;
 import org.n52.shetland.ogc.wps.data.impl.StringValueProcessData;
 import org.n52.shetland.ogc.wps.description.ProcessDescription;
@@ -53,7 +58,9 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringRunner.class)
 
@@ -91,8 +98,8 @@ public class HereAlgorithmTest {
         errors.checkThat(description.getOutputDescriptions().iterator().next().getId(), is(new OwsCode(Outputs.ROUTE)));
         errors.checkThat(description.getInputDescriptions(), hasSize(9));
         errors.checkThat(description.getInputs().stream().map(OwsCode::getValue).collect(toList()),
-                hasItems(Inputs.NAME, Inputs.START, Inputs.END, Inputs.PREFERENCE, Inputs.WHEN,
-                        Inputs.INTERMEDIATES, Inputs.OBSTACLES, Inputs.MAX_HEIGHT, Inputs.MAX_WEIGHT));
+                         hasItems(Inputs.NAME, Inputs.START, Inputs.END, Inputs.PREFERENCE, Inputs.WHEN,
+                                  Inputs.INTERMEDIATES, Inputs.OBSTACLES, Inputs.MAX_HEIGHT, Inputs.MAX_WEIGHT));
 
     }
 
@@ -105,7 +112,6 @@ public class HereAlgorithmTest {
         inputs.add(new StringValueProcessData(new OwsCode(Inputs.START), GEO_JSON_FORMAT, "{\"type\": \"Point\", \"coordinates\": [-77.047712, 38.892346]}"));
         inputs.add(new StringValueProcessData(new OwsCode(Inputs.END), GEO_JSON_FORMAT, "{\"type\": \"Point\", \"coordinates\": [-76.994730, 38.902629]}"));
         inputs.add(new StringValueProcessData(new OwsCode(Inputs.PREFERENCE), TEXT_PLAIN_FORMAT, "fastest"));
-
 
         OutputDefinition outputDefinition = new OutputDefinition();
         outputDefinition.setId(new OwsCode(Outputs.ROUTE));
@@ -141,6 +147,5 @@ public class HereAlgorithmTest {
         errors.checkThat(features.get(11).getProperties().get(RouteFeatureProperties.TYPE), is(RouteFeatureType.END.toString()));
         errors.checkThat(features.get(11).getGeometry(), is(Matchers.instanceOf(Point.class)));
     }
-
 
 }

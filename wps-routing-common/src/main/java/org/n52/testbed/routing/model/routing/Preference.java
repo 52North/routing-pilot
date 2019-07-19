@@ -20,7 +20,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * The routing preference.  Every API has to support at least 'fastest' and 'shortest'. The default value should be 'fastest'.
+ * The routing preference.  Every API has to support at least 'fastest' and 'shortest'. The default value should be
+ * 'fastest'.
  */
 public enum Preference {
     FASTEST("fastest"),

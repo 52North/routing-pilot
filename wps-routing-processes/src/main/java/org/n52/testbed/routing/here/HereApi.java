@@ -22,7 +22,12 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.n52.testbed.routing.model.routing.SpeedLimitUnit;
 
 import javax.validation.constraints.NotNull;
@@ -208,14 +213,22 @@ public interface HereApi {
         }
 
         public BigDecimal getDuration() {
-            if (getTrafficTime() != null) return BigDecimal.valueOf(getTrafficTime());
-            if (getBaseTime() != null) return BigDecimal.valueOf(getBaseTime());
-            if (getTravelTime() != null) return BigDecimal.valueOf(getTravelTime());
+            if (getTrafficTime() != null) {
+                return BigDecimal.valueOf(getTrafficTime());
+            }
+            if (getBaseTime() != null) {
+                return BigDecimal.valueOf(getBaseTime());
+            }
+            if (getTravelTime() != null) {
+                return BigDecimal.valueOf(getTravelTime());
+            }
             return null;
         }
 
         public BigDecimal getLength() {
-            if (getDistance() == null) return null;
+            if (getDistance() == null) {
+                return null;
+            }
             return BigDecimal.valueOf(getDistance());
         }
     }
@@ -259,15 +272,20 @@ public interface HereApi {
         @JsonProperty("roadName")
         private String roadName;
 
-
         public BigDecimal getLength() {
-            if (this.length == null) return null;
+            if (this.length == null) {
+                return null;
+            }
             return BigDecimal.valueOf(this.length);
         }
 
         public BigDecimal getDuration() {
-            if (this.trafficTime != null) return BigDecimal.valueOf(this.trafficTime);
-            if (this.travelTime != null) return BigDecimal.valueOf(this.travelTime);
+            if (this.trafficTime != null) {
+                return BigDecimal.valueOf(this.trafficTime);
+            }
+            if (this.travelTime != null) {
+                return BigDecimal.valueOf(this.travelTime);
+            }
             return null;
         }
 
@@ -312,6 +330,18 @@ public interface HereApi {
         @JsonProperty("trafficMode")
         private TrafficMode trafficMode;
         // TODO feature
+
+        public RoutingType getType() {
+            return type;
+        }
+
+        public List<TransportMode> getTransportModes() {
+            return transportModes;
+        }
+
+        public TrafficMode getTrafficMode() {
+            return trafficMode;
+        }
     }
 
     class Waypoint {
@@ -380,31 +410,35 @@ public interface HereApi {
     }
 
     class PointDeserializer extends JsonDeserializer<Point> {
-        private static final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
+        private static final GeometryFactory GEOMETRY_FACTORY = createGeometryFactory();
 
         @Override
         public Point deserialize(JsonParser p, DeserializationContext context) throws IOException {
             JsonNode node = p.readValueAs(JsonNode.class);
             double longitude = node.path("longitude").doubleValue();
             double latitude = node.path("latitude").doubleValue();
-            return geometryFactory.createPoint(new Coordinate(longitude, latitude));
+            return GEOMETRY_FACTORY.createPoint(new Coordinate(longitude, latitude));
+        }
+
+        private static GeometryFactory createGeometryFactory() {
+            return new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
         }
     }
 
     class LineStringDeserializer extends JsonDeserializer<Geometry> {
-        private static final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
+        private static final GeometryFactory GEOMETRY_FACTORY = createGeometryFactory();
 
         @Override
         public Geometry deserialize(JsonParser p, DeserializationContext context) throws IOException {
             Coordinate[] coordinates = Arrays.stream(p.readValueAs(String[].class))
-                    .filter(x -> x != null && !x.isEmpty())
-                    .map(this::fromString)
-                    .toArray(Coordinate[]::new);
+                                             .filter(x -> x != null && !x.isEmpty())
+                                             .map(this::fromString)
+                                             .toArray(Coordinate[]::new);
 
             if (coordinates.length == 1) {
-                return geometryFactory.createPoint(coordinates[0]);
+                return GEOMETRY_FACTORY.createPoint(coordinates[0]);
             }
-            return geometryFactory.createLineString(coordinates);
+            return GEOMETRY_FACTORY.createLineString(coordinates);
         }
 
         @NotNull
@@ -422,6 +456,9 @@ public interface HereApi {
             return new Coordinate(x, y);
         }
 
+        private static GeometryFactory createGeometryFactory() {
+            return new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
+        }
 
     }
 }

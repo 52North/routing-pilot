@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The list of routes currently available.  To be discussed. This could be more sophisticated and include information about the status, start/end point, etc. But it is unclear whether this operation is needed and this should be discussed first.
+ * The list of routes currently available.  To be discussed. This could be more sophisticated and include information
+ * about the status, start/end point, etc. But it is unclear whether this operation is needed and this should be
+ * discussed first.
  */
 @Validated
 public class Routes {

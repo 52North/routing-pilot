@@ -26,6 +26,7 @@ import java.util.Objects;
  */
 @Validated
 public class AllowedValues extends ArrayList<Object> implements ValueDefinition {
+    private static final long serialVersionUID = -1672390054226436054L;
 
     @Override
     public boolean equals(Object o) {

@@ -29,10 +29,10 @@ import java.util.Objects;
 @Validated
 public class ResultOutputs {
     @JsonProperty("id")
-    private String id = null;
+    private String id;
 
     @JsonProperty("value")
-    private ResultValue value = null;
+    private ResultValue value;
 
     @NotNull
     public String getId() {

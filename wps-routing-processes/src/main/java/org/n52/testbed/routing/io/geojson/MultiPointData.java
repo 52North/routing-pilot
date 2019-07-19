@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.MultiPoint;
 
 public class MultiPointData implements GeoJsonData<MultiPoint> {
+    private static final long serialVersionUID = 1756656320657778269L;
     private final MultiPoint payload;
 
     public MultiPointData(MultiPoint payload) {

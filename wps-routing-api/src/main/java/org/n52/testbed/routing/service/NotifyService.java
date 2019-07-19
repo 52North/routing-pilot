@@ -18,10 +18,16 @@ package org.n52.testbed.routing.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.n52.testbed.routing.model.MediaTypes;
-import org.n52.testbed.routing.model.routing.RouteInfo;
 import org.n52.testbed.routing.model.routing.Route;
+import org.n52.testbed.routing.model.routing.RouteInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +54,8 @@ public class NotifyService {
     }
 
     private Request createRequest(Route route, URI subscriber) throws JsonProcessingException {
-        RequestBody body = RequestBody.create(MediaType.get(MediaTypes.APPLICATION_JSON), objectMapper.writeValueAsBytes(route));
+        RequestBody body = RequestBody.create(MediaType.get(MediaTypes.APPLICATION_JSON),
+                                              objectMapper.writeValueAsBytes(route));
 
         return new Request.Builder().url(subscriber.toString()).post(body).build();
     }
@@ -72,9 +79,11 @@ public class NotifyService {
         @Override
         public void onResponse(Call call, Response response) {
             if (response.isSuccessful()) {
-                LOG.info("Successfully notified subscriber for {}", routeInfo.getIdentifier());
+                LOG.info("Successfully notified subscriber for {}",
+                         routeInfo.getIdentifier());
             } else {
-                LOG.warn("Subscriber for {} returned failure: {} {}", routeInfo.getIdentifier(), response.code(), response.message());
+                LOG.warn("Subscriber for {} returned failure: {} {}",
+                         routeInfo.getIdentifier(), response.code(), response.message());
             }
 
         }

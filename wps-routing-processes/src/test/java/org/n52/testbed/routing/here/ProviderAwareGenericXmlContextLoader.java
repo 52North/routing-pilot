@@ -29,8 +29,8 @@ import java.util.Optional;
 
 /**
  * Class to customize the {@link org.springframework.beans.factory.ListableBeanFactory} of the application context.
- * Mostly copied from {@link org.springframework.test.context.support.GenericXmlContextLoader}
- * and {@link org.springframework.test.context.support.AbstractGenericContextLoader}.
+ * Mostly copied from {@link org.springframework.test.context.support.GenericXmlContextLoader} and {@link
+ * org.springframework.test.context.support.AbstractGenericContextLoader}.
  */
 public class ProviderAwareGenericXmlContextLoader extends AbstractContextLoader {
 

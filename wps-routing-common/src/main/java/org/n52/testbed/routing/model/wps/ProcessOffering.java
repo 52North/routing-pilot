@@ -29,7 +29,7 @@ import java.util.Objects;
 @Validated
 public class ProcessOffering {
     @JsonProperty("process")
-    private Process process = null;
+    private Process process;
 
     @NotNull
     @Valid

@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.Point;
 
 public class PointData implements GeoJsonData<Point> {
+    private static final long serialVersionUID = -1769129871523167053L;
     private final Point payload;
 
     public PointData(Point payload) {

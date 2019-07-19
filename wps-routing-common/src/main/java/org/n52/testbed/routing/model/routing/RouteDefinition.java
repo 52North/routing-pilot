@@ -28,42 +28,43 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * The definition of a route. At a minimum, a route is defined by a start and end point.  More parameters and routing constraints will be added later.
+ * The definition of a route. At a minimum, a route is defined by a start and end point.  More parameters and routing
+ * constraints will be added later.
  */
 @Validated
 public class RouteDefinition {
     @JsonProperty("name")
-    private String name = null;
+    private String name;
 
     @JsonProperty("waypoints")
-    private MultiPoint waypoints = null;
+    private MultiPoint waypoints;
 
     @JsonProperty("preference")
     private Preference preference = Preference.FASTEST;
 
     @JsonProperty("maxHeight")
-    private BigDecimal maxHeight = null;
+    private BigDecimal maxHeight;
 
     @JsonProperty("maxWeight")
-    private BigDecimal maxWeight = null;
+    private BigDecimal maxWeight;
 
     @JsonProperty("obstacles")
-    private MultiPolygon obstacles = null;
+    private MultiPolygon obstacles;
 
     @JsonProperty("dataset")
-    private String dataset = null;
+    private String dataset;
 
     @JsonProperty("engine")
-    private String engine = null;
+    private String engine;
 
     @JsonProperty("algorithm")
-    private String algorithm = null;
+    private String algorithm;
 
     @JsonProperty("when")
-    private When when = null;
+    private When when;
 
     @JsonProperty("subscriber")
-    private URI subscriber = null;
+    private URI subscriber;
 
     public RouteDefinition name(String name) {
         this.name = name;
@@ -166,7 +167,6 @@ public class RouteDefinition {
         return this;
     }
 
-
     public String getEngine() {
         return engine;
     }
@@ -239,6 +239,7 @@ public class RouteDefinition {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, waypoints, preference, maxHeight, maxWeight, obstacles, dataset, engine, algorithm, when, subscriber);
+        return Objects.hash(name, waypoints, preference, maxHeight, maxWeight,
+                            obstacles, dataset, engine, algorithm, when, subscriber);
     }
 }

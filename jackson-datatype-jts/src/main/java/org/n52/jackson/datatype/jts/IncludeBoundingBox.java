@@ -16,12 +16,22 @@
  */
 package org.n52.jackson.datatype.jts;
 
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+
+import java.io.Serializable;
 
 /**
  * Class to determine when to include a bounding box for geometries.
  */
-public class IncludeBoundingBox {
+public final class IncludeBoundingBox implements Serializable {
+    private static final long serialVersionUID = 204690259235746434L;
     private final int mask;
 
     /**
@@ -105,8 +115,8 @@ public class IncludeBoundingBox {
     }
 
     /**
-     * Include the bounding box for geometries of type {@link MultiPoint}, {@link MultiLineString},
-     * {@link MultiPolygon} and {@link GeometryCollection}.
+     * Include the bounding box for geometries of type {@link MultiPoint}, {@link MultiLineString}, {@link MultiPolygon}
+     * and {@link GeometryCollection}.
      *
      * @return The {@link IncludeBoundingBox}.
      */
@@ -161,6 +171,7 @@ public class IncludeBoundingBox {
                 .forLineString()
                 .forPoint();
     }
+
     /**
      * Always include bounding box.
      *
@@ -175,6 +186,5 @@ public class IncludeBoundingBox {
                 .forPolygon()
                 .forLineString();
     }
-
 
 }

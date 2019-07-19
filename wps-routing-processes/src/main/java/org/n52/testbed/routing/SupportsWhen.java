@@ -23,7 +23,8 @@ import org.n52.testbed.routing.model.wps.Inputs;
 
 public interface SupportsWhen extends RoutingAlgorithm {
 
-    @ComplexInput(identifier = Inputs.WHEN, title = "When", abstrakt = "When to arrive or when to departure.", minOccurs = 0, maxOccurs = 1, binding = WhenData.class)
+    @ComplexInput(identifier = Inputs.WHEN, title = "When", abstrakt = "When to arrive or when to departure.",
+                  minOccurs = 0, maxOccurs = 1, binding = WhenData.class)
     void setWhen(When when);
 
 }

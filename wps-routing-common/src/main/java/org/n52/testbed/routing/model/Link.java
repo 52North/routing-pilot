@@ -20,27 +20,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Link
  */
 @Validated
-public class Link {
+public class Link implements Serializable {
+    private static final long serialVersionUID = 1932377045771809832L;
     @JsonProperty("href")
-    private String href = null;
+    private String href;
 
     @JsonProperty("rel")
-    private String rel = null;
+    private String rel;
 
     @JsonProperty("type")
-    private String type = null;
+    private String type;
 
     @JsonProperty("hreflang")
-    private String lang = null;
+    private String lang;
 
     @JsonProperty("title")
-    private String title = null;
+    private String title;
 
     public Link href(String href) {
         this.href = href;
@@ -107,7 +109,6 @@ public class Link {
     public void setTitle(String title) {
         this.title = title;
     }
-
 
     @Override
     public boolean equals(java.lang.Object o) {

@@ -26,6 +26,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,20 +37,20 @@ import java.util.Objects;
  */
 @Validated
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Route {
-
+public class Route implements Serializable {
+    private static final long serialVersionUID = -1542687951139143511L;
     @JsonProperty("type")
     private final GeoJsonType type = GeoJsonType.FEATURE_COLLECTION;
 
     @JsonProperty("status")
-    private Status status = null;
+    private Status status;
 
     @JsonProperty("name")
-    private String name = null;
+    private String name;
 
     @JsonProperty("links")
     @Valid
-    private List<Link> links = null;
+    private List<Link> links;
 
     @JsonProperty("features")
     @Valid
@@ -58,7 +59,7 @@ public class Route {
 
     @JsonProperty("bbox")
     @Valid
-    private List<BigDecimal> bbox = null;
+    private List<BigDecimal> bbox;
 
     @NotNull
     @Valid
@@ -69,7 +70,6 @@ public class Route {
     public void setStatus(Status status) {
         this.status = status;
     }
-
 
     public String getName() {
         return name;

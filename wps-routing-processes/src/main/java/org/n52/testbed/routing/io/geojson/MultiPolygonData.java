@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.MultiPolygon;
 
 public class MultiPolygonData implements GeoJsonData<MultiPolygon> {
+    private static final long serialVersionUID = -5782677777065035302L;
     private final MultiPolygon payload;
 
     public MultiPolygonData(MultiPolygon payload) {

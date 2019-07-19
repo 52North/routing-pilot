@@ -17,14 +17,24 @@
 package org.n52.testbed.routing.client;
 
 import org.n52.testbed.routing.model.wps.ConfClasses;
-import org.n52.testbed.routing.model.wps.*;
+import org.n52.testbed.routing.model.wps.Execute;
+import org.n52.testbed.routing.model.wps.JobCollection;
+import org.n52.testbed.routing.model.wps.LandingPage;
+import org.n52.testbed.routing.model.wps.ProcessCollection;
+import org.n52.testbed.routing.model.wps.ProcessOffering;
+import org.n52.testbed.routing.model.wps.Result;
+import org.n52.testbed.routing.model.wps.StatusInfo;
 import retrofit2.Call;
-import retrofit2.http.*;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface OgcProcessingApi {
     /**
-     * landing page
-     * The landing page provides links to the API definition, the conformance statements and to existing or new routing tasks.
+     * landing page The landing page provides links to the API definition, the conformance statements and to existing or
+     * new routing tasks.
      *
      * @return Call&lt;LandingPage&gt;
      */
@@ -32,8 +42,8 @@ public interface OgcProcessingApi {
     Call<LandingPage> getLandingPage();
 
     /**
-     * information about standards that this API conforms to
-     * list all requirements classes specified in a standard (e.g., OGC API - Processes - Part 1: Core) that the server conforms to
+     * information about standards that this API conforms to list all requirements classes specified in a standard
+     * (e.g., OGC API - Processes - Part 1: Core) that the server conforms to
      *
      * @return Call&lt;ConfClasses&gt;
      */
@@ -41,15 +51,14 @@ public interface OgcProcessingApi {
     Call<ConfClasses> getConformanceDeclaration();
 
     /**
-     * retrieve the processes available
-     * The response is a list of processes available on this server. In the Routing API Pilot there is only a single process that is specified.
+     * retrieve the processes available The response is a list of processes available on this server. In the Routing API
+     * Pilot there is only a single process that is specified.
      *
      * @return Call&lt;ProcessCollection&gt;
      */
     @GET("processes")
     @Headers({"Accept: application/json"})
     Call<ProcessCollection> getProcesses();
-
 
     /**
      * retrieve a process description
@@ -81,7 +90,6 @@ public interface OgcProcessingApi {
     @GET("processes/{processId}/jobs")
     @Headers({"Accept: application/json"})
     Call<JobCollection> getJobList(@Path("processId") String processId);
-
 
     /**
      * retrieve the status of a job

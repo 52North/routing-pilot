@@ -17,4 +17,5 @@
 package org.n52.testbed.routing.service;
 
 public class RouteNotFoundException extends RuntimeException {
+    private static final long serialVersionUID = -2665820818599890477L;
 }

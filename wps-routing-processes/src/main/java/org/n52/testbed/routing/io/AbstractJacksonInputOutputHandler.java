@@ -22,20 +22,32 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.n52.javaps.description.TypedProcessInputDescription;
 import org.n52.javaps.description.TypedProcessOutputDescription;
-import org.n52.javaps.io.*;
+import org.n52.javaps.io.AbstractInputOutputHandler;
+import org.n52.javaps.io.Data;
+import org.n52.javaps.io.DecodingException;
+import org.n52.javaps.io.EncodingException;
+import org.n52.javaps.io.InputHandler;
+import org.n52.javaps.io.OutputHandler;
 import org.n52.shetland.ogc.wps.Format;
 import org.n52.testbed.routing.model.MediaTypes;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Set;
 
 public abstract class AbstractJacksonInputOutputHandler extends AbstractInputOutputHandler
         implements InputHandler, OutputHandler {
-
     protected static final Format JSON_FORMAT = new Format(MediaTypes.APPLICATION_JSON);
+    private static final String UNSUPPORTED_BINDING_TYPE = "unsupported binding type: ";
+    private static final String SINGLE_ARGUMENT_CONSTRUCTOR = "bindings require a single argument constructor";
 
     private final ObjectMapper objectMapper;
 
@@ -66,7 +78,7 @@ public abstract class AbstractJacksonInputOutputHandler extends AbstractInputOut
     public void addSupportedBinding(Class<? extends Data<?>> bindingType) {
         Constructor<?>[] constructors = bindingType.getConstructors();
         if (constructors.length != 1 || constructors[0].getParameterCount() != 1) {
-            throw new IllegalArgumentException("bindings require a single argument constructor");
+            throw new IllegalArgumentException(SINGLE_ARGUMENT_CONSTRUCTOR);
         }
         super.addSupportedBinding(bindingType);
     }
@@ -83,8 +95,8 @@ public abstract class AbstractJacksonInputOutputHandler extends AbstractInputOut
         try {
             Constructor<?>[] constructors = bindingType.getConstructors();
             if (constructors.length != 1 || constructors[0].getParameterCount() != 1
-                    || !constructors[0].getParameterTypes()[0].isAssignableFrom(payload.getClass())) {
-                throw new DecodingException("bindings require a single argument constructor");
+                || !constructors[0].getParameterTypes()[0].isAssignableFrom(payload.getClass())) {
+                throw new DecodingException(SINGLE_ARGUMENT_CONSTRUCTOR);
             }
             return (Data<?>) constructors[0].newInstance(payload);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -92,9 +104,10 @@ public abstract class AbstractJacksonInputOutputHandler extends AbstractInputOut
         }
     }
 
-    private <T> T readValue(InputStream input, Format format, Class<? extends T> type)
+    private <T> T readValue(InputStream stream, Format format, Class<? extends T> type)
             throws DecodingException, IOException {
-        try (InputStreamReader reader = new InputStreamReader(input, format.getEncodingAsCharsetOrDefault())) {
+        Charset charset = format.getEncodingAsCharsetOrDefault();
+        try (InputStreamReader reader = new InputStreamReader(stream, charset)) {
             return getObjectMapper().readValue(reader, type);
         } catch (JsonParseException | JsonMappingException e) {
             throw new DecodingException("can not decode type " + type, e);
@@ -102,26 +115,27 @@ public abstract class AbstractJacksonInputOutputHandler extends AbstractInputOut
     }
 
     private InputStream writeValue(Object value, Format format) throws EncodingException, IOException {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             OutputStreamWriter writer = new OutputStreamWriter(byteArrayOutputStream, format.getEncodingAsCharsetOrDefault())) {
+        Charset charset = format.getEncodingAsCharsetOrDefault();
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(stream, charset)) {
             getObjectMapper().writeValue(writer, value);
-            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            return new ByteArrayInputStream(stream.toByteArray());
         } catch (JsonProcessingException e) {
             throw new EncodingException("can not encode value" + value.getClass(), e);
         }
     }
 
     private Data<?> checkBindingType(Data<?> data) throws EncodingException {
-        Class<? extends Data> bindingType = data.getClass();
+        Class<?> bindingType = data.getClass();
         if (getSupportedBindings().stream().noneMatch(x -> x.isAssignableFrom(bindingType))) {
-            throw new EncodingException("unsupported binding type: " + bindingType);
+            throw new EncodingException(UNSUPPORTED_BINDING_TYPE + bindingType);
         }
         return data;
     }
 
     private <T> Class<T> checkBindingType(Class<T> bindingType) throws DecodingException {
         if (getSupportedBindings().stream().noneMatch(x -> x.isAssignableFrom(bindingType))) {
-            throw new DecodingException("unsupported binding type: " + bindingType);
+            throw new DecodingException(UNSUPPORTED_BINDING_TYPE + bindingType);
         }
         return bindingType;
     }

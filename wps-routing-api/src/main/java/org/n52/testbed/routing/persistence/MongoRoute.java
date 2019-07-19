@@ -29,7 +29,6 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Optional;
 
-
 @Document
 public class MongoRoute implements RouteInfo {
 

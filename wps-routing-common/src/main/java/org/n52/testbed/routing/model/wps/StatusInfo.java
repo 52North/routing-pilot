@@ -31,13 +31,13 @@ import java.util.Objects;
 @Validated
 public class StatusInfo {
     @JsonProperty("status")
-    private Status status = null;
+    private Status status;
 
     @JsonProperty("message")
-    private String message = null;
+    private String message;
 
     @JsonProperty("progress")
-    private Integer progress = null;
+    private Integer progress;
 
     @NotNull
     @Valid
@@ -69,8 +69,12 @@ public class StatusInfo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof StatusInfo)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StatusInfo)) {
+            return false;
+        }
         StatusInfo that = (StatusInfo) o;
         return getStatus() == that.getStatus() &&
                 Objects.equals(getMessage(), that.getMessage()) &&

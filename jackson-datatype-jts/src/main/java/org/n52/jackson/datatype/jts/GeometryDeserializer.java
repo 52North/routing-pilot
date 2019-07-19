@@ -21,7 +21,18 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -61,7 +72,7 @@ public class GeometryDeserializer extends JsonDeserializer<Geometry> {
         String typeName = node.get(GeoJsonConstants.Fields.TYPE).asText();
 
         GeometryType type = GeometryType.fromString(typeName)
-                .orElseThrow(() -> JsonMappingException.from(context, "Invalid geometry type: " + typeName));
+                .orElseThrow(() -> invalidGeometryType(context, typeName));
 
         switch (type) {
             case POINT:
@@ -79,8 +90,12 @@ public class GeometryDeserializer extends JsonDeserializer<Geometry> {
             case GEOMETRY_COLLECTION:
                 return deserializeGeometryCollection(node, context);
             default:
-                throw JsonMappingException.from(context, "Invalid geometry type: " + typeName);
+                throw invalidGeometryType(context, typeName);
         }
+    }
+
+    private JsonMappingException invalidGeometryType(DeserializationContext context, String typeName) {
+        return JsonMappingException.from(context, "Invalid geometry type: " + typeName);
     }
 
     private Point deserializePoint(JsonNode node, DeserializationContext context) throws JsonMappingException {
@@ -127,7 +142,8 @@ public class GeometryDeserializer extends JsonDeserializer<Geometry> {
         return this.geometryFactory.createMultiLineString(lineStrings);
     }
 
-    private LineString[] lineStringsFromJson(JsonNode node, DeserializationContext context) throws JsonMappingException {
+    private LineString[] lineStringsFromJson(JsonNode node, DeserializationContext context)
+            throws JsonMappingException {
         LineString[] strings = new LineString[node.size()];
         for (int i = 0; i != node.size(); ++i) {
             Coordinate[] coordinates = deserializeCoordinates(node.get(i), context);
@@ -136,7 +152,8 @@ public class GeometryDeserializer extends JsonDeserializer<Geometry> {
         return strings;
     }
 
-    private LineString deserializeLineString(JsonNode node, DeserializationContext context) throws JsonMappingException {
+    private LineString deserializeLineString(JsonNode node, DeserializationContext context)
+            throws JsonMappingException {
         JsonNode coordinates = node.get(GeoJsonConstants.Fields.COORDINATES);
         Coordinate[] coords = deserializeCoordinates(coordinates, context);
         return this.geometryFactory.createLineString(coords);

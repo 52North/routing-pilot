@@ -20,7 +20,16 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 
@@ -58,7 +67,7 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
             return serialize((GeometryCollection) geometry);
         } else {
             throw new IllegalArgumentException(String.format("Geometry type %s is not supported.",
-                    geometry.getClass().getName()));
+                                                             geometry.getClass().getName()));
         }
     }
 
@@ -75,7 +84,7 @@ public class GeometryWriteConverter implements Converter<Geometry, DBObject> {
             o.put(GeoBSONConstants.TYPE, GeoBSONConstants.MULTI_POINT);
         } else if (geometry instanceof MultiLineString) {
             o.put(GeoBSONConstants.TYPE, GeoBSONConstants.MULTI_LINE_STRING);
-        } else if (geometry instanceof  MultiPolygon) {
+        } else if (geometry instanceof MultiPolygon) {
             o.put(GeoBSONConstants.TYPE, GeoBSONConstants.MULTI_POLYGON);
         } else if (geometry instanceof GeometryCollection) {
             o.put(GeoBSONConstants.TYPE, GeoBSONConstants.GEOMETRY_COLLECTION);

@@ -19,6 +19,7 @@ package org.n52.testbed.routing.persistence;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
+import com.mongodb.lang.Nullable;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoClientFactory;
@@ -34,13 +35,12 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import javax.annotation.PreDestroy;
 import java.util.List;
 
-
 @Configuration
 public class MongoConfiguration extends AbstractMongoConfiguration {
     private final MongoClientOptions options;
     private final MongoProperties properties;
     private final MongoClientFactory factory;
-    private MongoClient mongo;
+    private MongoClient client;
     private List<Converter<?, ?>> converters;
 
     public MongoConfiguration(MongoProperties properties,
@@ -53,17 +53,20 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 
     @PreDestroy
     public void close() {
-        if (this.mongo != null) {
-            this.mongo.close();
+        if (this.client != null) {
+            this.client.close();
         }
     }
 
     @Override
+    @Nullable
     protected String getDatabaseName() {
-        if (properties.getUri() != null) {
+        String uri = properties.getUri();
+        if (uri != null) {
             MongoClientOptions.Builder builder = options != null
                     ? MongoClientOptions.builder(options) : MongoClientOptions.builder();
-            return new MongoClientURI(properties.getUri(), builder).getDatabase();
+            MongoClientURI mongoClientURI = new MongoClientURI(uri, builder);
+            return mongoClientURI.getDatabase();
         }
         return properties.getDatabase();
     }
@@ -76,8 +79,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
     @Override
     @Bean
     public MongoClient mongoClient() {
-        this.mongo = this.factory.createMongoClient(this.options);
-        return this.mongo;
+        return this.client = this.factory.createMongoClient(this.options);
     }
 
     @Autowired

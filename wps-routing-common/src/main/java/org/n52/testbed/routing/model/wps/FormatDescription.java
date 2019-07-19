@@ -30,7 +30,7 @@ public class FormatDescription {
     @JsonUnwrapped
     private Format format;
     @JsonProperty("maximumMegabytes")
-    private Integer maximumMegabytes = null;
+    private Integer maximumMegabytes;
     @JsonProperty("default")
     private Boolean defaultValue = false;
 

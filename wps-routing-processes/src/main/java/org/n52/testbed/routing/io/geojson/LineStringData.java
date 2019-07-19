@@ -19,6 +19,7 @@ package org.n52.testbed.routing.io.geojson;
 import org.locationtech.jts.geom.LineString;
 
 public class LineStringData implements GeoJsonData<LineString> {
+    private static final long serialVersionUID = 1030229361295910458L;
     private final LineString payload;
 
     public LineStringData(LineString payload) {

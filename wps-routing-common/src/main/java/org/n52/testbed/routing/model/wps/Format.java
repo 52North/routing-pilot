@@ -28,13 +28,13 @@ import java.util.Objects;
 @Validated
 public class Format {
     @JsonProperty("mimeType")
-    private String mimeType = null;
+    private String mimeType;
 
     @JsonProperty("schema")
-    private String schema = null;
+    private String schema;
 
     @JsonProperty("encoding")
-    private String encoding = null;
+    private String encoding;
 
     public Format(String mimeType, String schema) {
         this(mimeType, schema, null);

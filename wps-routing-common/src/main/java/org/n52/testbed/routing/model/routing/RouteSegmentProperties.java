@@ -66,7 +66,7 @@ public class RouteSegmentProperties extends RouteFeatureProperties<RouteSegmentP
     private String roadName;
 
     @JsonProperty(INSTRUCTIONS)
-    private Instruction instructions = null;
+    private Instruction instructions;
 
     @Override
     public RouteFeatureType getType() {
@@ -197,7 +197,6 @@ public class RouteSegmentProperties extends RouteFeatureProperties<RouteSegmentP
         this.instructions = instructions;
     }
 
-
     @Override
     public boolean equals(java.lang.Object o) {
         if (this == o) {
@@ -221,6 +220,7 @@ public class RouteSegmentProperties extends RouteFeatureProperties<RouteSegmentP
 
     @Override
     public int hashCode() {
-        return Objects.hash(getType(), levelOfDetail, length, duration, maxHeight, maxLoad, speedLimit, speedLimitUnit, roadName, instructions);
+        return Objects.hash(getType(), levelOfDetail, length, duration, maxHeight, maxLoad,
+                            speedLimit, speedLimitUnit, roadName, instructions);
     }
 }
