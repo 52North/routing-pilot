@@ -80,19 +80,15 @@ public class RoutingController extends AbstractRoutingController implements Defa
 
     @Override
     public ResponseEntity<Route> computeRoute(@Valid RouteDefinition routeDefinition, @Valid Mode mode) {
-        try {
-            switch (Optional.ofNullable(mode).orElse(Mode.ASYNC)) {
-                case SYNC:
-                    RouteInfo routeInfo = service.createRouteAsync(routeDefinition);
-                    return created(getUriBuilder().path("routes/{routeId}").build(routeInfo.getIdentifier()));
-                case ASYNC:
-                    Route route = service.createRouteSync(routeDefinition);
-                    return ResponseEntity.ok(route);
-                default:
-                    throw new Error("unsupported mode");
-            }
-        } catch (IllegalArgumentException ex) {
-            throw new HttpStatusError(HttpStatus.BAD_REQUEST, ex);
+        switch (Optional.ofNullable(mode).orElse(Mode.ASYNC)) {
+            case ASYNC:
+                RouteInfo routeInfo = service.createRouteAsync(routeDefinition);
+                return created(getUriBuilder().path("routes/{routeId}").build(routeInfo.getIdentifier()));
+            case SYNC:
+                Route route = service.createRouteSync(routeDefinition);
+                return ResponseEntity.ok(route);
+            default:
+                throw new HttpStatusError(HttpStatus.BAD_REQUEST, "unsupported mode");
         }
     }
 

@@ -352,7 +352,7 @@ public class RouteService {
     }
 
     private Geometry getEndPoint(MultiPoint x) {
-        return x.getGeometryN(x.getNumGeometries() - 2);
+        return x.getGeometryN(x.getNumGeometries() - 1);
     }
 
     private MultiPoint getIntermediatePoints(MultiPoint x) {
@@ -477,7 +477,7 @@ public class RouteService {
 
     @NotNull
     public StatusInfo retrieveStatus(@NotNull MongoRoute mongoRoute) throws IOException {
-        return retrieveStatus(mongoRoute.getJobId(), mongoRoute.getProcessId());
+        return retrieveStatus(mongoRoute.getProcessId(), mongoRoute.getJobId());
     }
 
     @NotNull
@@ -490,7 +490,7 @@ public class RouteService {
 
     @NotNull
     private Route retrieveResult(@NotNull MongoRoute mongoRoute) throws IOException {
-        return retrieveResult(mongoRoute.getJobId(), mongoRoute.getProcessId());
+        return retrieveResult(mongoRoute.getProcessId(), mongoRoute.getJobId());
     }
 
     @NotNull

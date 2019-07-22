@@ -33,14 +33,17 @@ import org.n52.testbed.routing.model.wps.ProcessOffering;
 import org.n52.testbed.routing.model.wps.Result;
 import org.n52.testbed.routing.model.wps.StatusInfo;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
+import java.beans.PropertyEditorSupport;
 
 public interface DefaultApi {
 
@@ -77,6 +80,10 @@ public interface DefaultApi {
                 produces = {MediaTypes.APPLICATION_JSON})
     ResponseEntity<Result> getResult(@PathVariable("jobId") String jobId);
 
+    @GetMapping(value = "/routes",
+                produces = {MediaTypes.APPLICATION_JSON})
+    ResponseEntity<Routes> getRoutes();
+
     @PostMapping(value = "/routes",
                  produces = {MediaTypes.APPLICATION_GEO_JSON, MediaTypes.APPLICATION_JSON},
                  consumes = {MediaTypes.APPLICATION_JSON})
@@ -94,7 +101,14 @@ public interface DefaultApi {
                 produces = {MediaTypes.APPLICATION_JSON})
     ResponseEntity<RouteDefinition> getRouteDefinition(@PathVariable("routeId") String routeId);
 
-    @GetMapping(value = "/routes",
-                produces = {MediaTypes.APPLICATION_JSON})
-    ResponseEntity<Routes> getRoutes();
+    @InitBinder
+    default void initBinder(final WebDataBinder webdataBinder) {
+        webdataBinder.registerCustomEditor(Mode.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                setValue(Mode.fromString(text));
+            }
+        });
+    }
+
 }
