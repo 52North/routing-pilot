@@ -102,11 +102,11 @@ public interface DefaultApi {
     ResponseEntity<RouteDefinition> getRouteDefinition(@PathVariable("routeId") String routeId);
 
     @InitBinder
-    default void initBinder(final WebDataBinder webdataBinder) {
+    default void initBinder(WebDataBinder webdataBinder) {
         webdataBinder.registerCustomEditor(Mode.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) throws IllegalArgumentException {
-                setValue(Mode.fromString(text));
+                setValue(Mode.fromString(text).orElse(null));
             }
         });
     }
