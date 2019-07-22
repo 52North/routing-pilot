@@ -19,28 +19,23 @@ package org.n52.testbed.routing;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.n52.jackson.datatype.jts.IncludeBoundingBox;
 import org.n52.jackson.datatype.jts.JtsModule;
 import org.n52.testbed.routing.client.OgcProcessingApi;
 import org.n52.testbed.routing.client.OptionRoutesApi;
-import org.n52.testbed.routing.persistence.converters.GeometryCollectionReadConverter;
-import org.n52.testbed.routing.persistence.converters.GeometryCollectionWriteConverter;
-import org.n52.testbed.routing.persistence.converters.GeometryReadConverter;
-import org.n52.testbed.routing.persistence.converters.GeometryWriteConverter;
-import org.n52.testbed.routing.persistence.converters.LineStringReadConverter;
-import org.n52.testbed.routing.persistence.converters.LineStringWriteConverter;
-import org.n52.testbed.routing.persistence.converters.MultiLineStringReadConverter;
-import org.n52.testbed.routing.persistence.converters.MultiLineStringWriteConverter;
-import org.n52.testbed.routing.persistence.converters.MultiPointReadConverter;
-import org.n52.testbed.routing.persistence.converters.MultiPointWriteConverter;
-import org.n52.testbed.routing.persistence.converters.MultiPolygonReadConverter;
-import org.n52.testbed.routing.persistence.converters.MultiPolygonWriteConverter;
-import org.n52.testbed.routing.persistence.converters.PointReadConverter;
-import org.n52.testbed.routing.persistence.converters.PointWriteConverter;
-import org.n52.testbed.routing.persistence.converters.PolygonReadConverter;
-import org.n52.testbed.routing.persistence.converters.PolygonWriteConverter;
+import org.n52.testbed.routing.model.routing.Route;
+import org.n52.testbed.routing.model.routing.RouteDefinition;
+import org.n52.testbed.routing.persistence.MongoJacksonConverterFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -50,7 +45,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -107,24 +101,18 @@ public class Application {
     public class MongoConfiguration {
 
         @Bean
-        public MongoCustomConversions customConversions() {
-            List<Converter<?, ?>> converters = Arrays.asList(
-                    GeometryCollectionReadConverter.INSTANCE,
-                    GeometryCollectionWriteConverter.INSTANCE,
-                    GeometryReadConverter.INSTANCE,
-                    GeometryWriteConverter.INSTANCE,
-                    LineStringReadConverter.INSTANCE,
-                    LineStringWriteConverter.INSTANCE,
-                    MultiLineStringReadConverter.INSTANCE,
-                    MultiLineStringWriteConverter.INSTANCE,
-                    MultiPointReadConverter.INSTANCE,
-                    MultiPointWriteConverter.INSTANCE,
-                    MultiPolygonReadConverter.INSTANCE,
-                    MultiPolygonWriteConverter.INSTANCE,
-                    PointReadConverter.INSTANCE,
-                    PointWriteConverter.INSTANCE,
-                    PolygonReadConverter.INSTANCE,
-                    PolygonWriteConverter.INSTANCE);
+        public MongoCustomConversions customConversions(MongoJacksonConverterFactory factory) {
+            List<?> converters = Arrays.asList(
+                    factory.forType(Route.class),
+                    factory.forType(RouteDefinition.class),
+                    factory.forType(Geometry.class),
+                    factory.forType(Point.class),
+                    factory.forType(LineString.class),
+                    factory.forType(Polygon.class),
+                    factory.forType(MultiPoint.class),
+                    factory.forType(MultiLineString.class),
+                    factory.forType(MultiPolygon.class),
+                    factory.forType(GeometryCollection.class));
             return new MongoCustomConversions(converters);
         }
 
