@@ -83,7 +83,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
         switch (Optional.ofNullable(mode).orElse(Mode.ASYNC)) {
             case ASYNC:
                 RouteInfo routeInfo = service.createRouteAsync(routeDefinition);
-                return created(getUriBuilder().path("routes/{routeId}").build(routeInfo.getIdentifier()));
+                return created(getUriBuilder().path("/routes/{routeId}").build(routeInfo.getIdentifier()));
             case SYNC:
                 Route route = service.createRouteSync(routeDefinition);
                 return ResponseEntity.ok(route);
@@ -190,7 +190,8 @@ public class RoutingController extends AbstractRoutingController implements Defa
             // replace the links with links to this service
             process.getLinks().forEach(link -> {
                 if (link.getRel().equals(LinkRelation.CANONICAL)) {
-                    link.setHref(getUriBuilder().path("processes/{processId}/jobs").build(ROUTING_PROCESS_ID)
+                    link.setHref(getUriBuilder().path("/processes/{processId}/jobs")
+                                                .build(ROUTING_PROCESS_ID)
                                                 .toASCIIString());
                 }
             });
@@ -251,7 +252,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
      * @return The URI.
      */
     private String getProcessUri(String processId) {
-        return getUriBuilder().path("processes").pathSegment(processId).toUriString();
+        return getUriBuilder().path("/processes/{processId}").build(processId).toString();
     }
 
     @Override
@@ -296,7 +297,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
         link.rel(LinkRelation.SERVICE);
         link.type(MediaTypes.APPLICATION_OPENAPI);
         link.title(SERVICE_TITLE);
-        link.href(getUriBuilder().path("api/").toUriString());
+        link.href(getUriBuilder().path("/api").toUriString());
         return link;
     }
 
@@ -305,7 +306,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
         link.rel(LinkRelation.CONFORMANCE);
         link.type(MediaTypes.APPLICATION_JSON);
         link.title(CONFORMANCE_TITLE);
-        link.href(getUriBuilder().path("conformance/").toUriString());
+        link.href(getUriBuilder().path("/conformance").toUriString());
         return link;
     }
 
@@ -314,7 +315,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
         link.rel(LinkRelation.PROCESSES);
         link.type(MediaTypes.APPLICATION_JSON);
         link.title(PROCESSES_TITLE);
-        link.href(getUriBuilder().path("processes/").toUriString());
+        link.href(getUriBuilder().path("/processes").toUriString());
         return link;
     }
 

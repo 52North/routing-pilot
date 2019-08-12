@@ -74,18 +74,14 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
     private static final HttpUrl BASE_URL = HttpUrl.get("https://route.api.here.com/routing/7.2/");
     private static final String APP_CODE = "app_code";
     private static final String APP_ID = "app_id";
+    private static final OkHttpClient CLIENT = createOkHttpClient();
     private MultiPoint intermediates;
     private MultiPolygon obstacles;
     private BigDecimal maxHeight;
     private BigDecimal maxWeight;
     private When when;
-    private OkHttpClient client;
     @Autowired
     private ObjectMapper objectMapper;
-
-    public HereAlgorithm() {
-        this.client = createOkHttpClient();
-    }
 
     @Override
     public void setIntermediates(MultiPoint intermediates) {
@@ -110,29 +106,6 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
     @Override
     public void setWhen(When when) {
         this.when = when;
-    }
-
-    private OkHttpClient createOkHttpClient() {
-        String appCode = requireProperty(HERE_APP_CODE_ENV_VARIABLE, HERE_APP_CODE_PROPERTY);
-        String appId = requireProperty(HERE_APP_ID_ENV_VARIABLE, HERE_APP_ID_PROPERTY);
-        return new OkHttpClient.Builder()
-                       .addInterceptor(new AppCredentialInterceptor(appId, appCode))
-                       .retryOnConnectionFailure(true)
-                       .followRedirects(true)
-                       .build();
-    }
-
-    private String requireProperty(String envName, String propName) {
-        String value = System.getenv(envName);
-        if (value == null || value.isEmpty()) {
-            value = System.getProperty(propName);
-        }
-        if (value == null || value.isEmpty()) {
-            String message = String.format("neither system property %s nor environment variable %s is set",
-                                           propName, envName);
-            throw new RuntimeException(message);
-        }
-        return value;
     }
 
     @Override
@@ -202,13 +175,14 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         Request.Builder requestBuilder = new Request.Builder();
 
         Request request = requestBuilder.get().url(url).build();
-        Response execute = client.newCall(request).execute();
-        if (!execute.isSuccessful() || execute.body() == null) {
-            throw new ExecutionException(String.format("HERE API responded with status %d", execute.code()));
-        }
+        try (Response execute = CLIENT.newCall(request).execute()) {
+            if (!execute.isSuccessful() || execute.body() == null) {
+                throw new ExecutionException(String.format("HERE API responded with status %d", execute.code()));
+            }
 
-        return objectMapper.readValue(execute.body().charStream(), HereApi.ResponseWrapper.class)
-                           .getResponse().getRoute().iterator().next();
+            return objectMapper.readValue(execute.body().charStream(), HereApi.ResponseWrapper.class)
+                               .getResponse().getRoute().iterator().next();
+        }
     }
 
     private String getModeParameter(HereApi.TransportMode transportMode, HereApi.RoutingType routingType) {
@@ -343,6 +317,29 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
 
     private String asWaypointParameter(Point startPoint) {
         return String.format(Locale.ROOT, "geo!%f,%f", startPoint.getY(), startPoint.getX());
+    }
+
+    private static OkHttpClient createOkHttpClient() {
+        String appCode = requireProperty(HERE_APP_CODE_ENV_VARIABLE, HERE_APP_CODE_PROPERTY);
+        String appId = requireProperty(HERE_APP_ID_ENV_VARIABLE, HERE_APP_ID_PROPERTY);
+        return new OkHttpClient.Builder()
+                       .addInterceptor(new AppCredentialInterceptor(appId, appCode))
+                       .retryOnConnectionFailure(true)
+                       .followRedirects(true)
+                       .build();
+    }
+
+    private static String requireProperty(String envName, String propName) {
+        String value = System.getenv(envName);
+        if (value == null || value.isEmpty()) {
+            value = System.getProperty(propName);
+        }
+        if (value == null || value.isEmpty()) {
+            String message = String.format("neither system property %s nor environment variable %s is set",
+                                           propName, envName);
+            throw new RuntimeException(message);
+        }
+        return value;
     }
 
     private static final class AppCredentialInterceptor implements Interceptor {

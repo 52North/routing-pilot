@@ -16,13 +16,19 @@
  */
 package org.n52.testbed.routing;
 
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.n52.testbed.routing.model.routing.Preference;
 import org.n52.testbed.routing.model.routing.Route;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class AbstractRoutingAlgorithm implements RoutingAlgorithm {
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(
+            new PrecisionModel(PrecisionModel.FLOATING), 4326);
     private Route route;
     private String name;
     private Point startPoint;
@@ -62,12 +68,20 @@ public abstract class AbstractRoutingAlgorithm implements RoutingAlgorithm {
     }
 
     protected Preference getPreference() {
-        return preference;
+        return Optional.ofNullable(this.preference).orElse(Preference.FASTEST);
     }
 
     @Override
     public void execute() throws Exception {
         this.route = computeRoute();
+    }
+
+    protected GeometryFactory getGeometryFactory() {
+        return GEOMETRY_FACTORY;
+    }
+
+    protected MultiPoint getWayPoints() {
+        return getGeometryFactory().createMultiPoint(new Point[]{getStartPoint(), getEndPoint()});
     }
 
     @Override

@@ -30,7 +30,7 @@ COPY --from=BUILD /usr/src/app/wps-routing-api/target/unpacked/BOOT-INF/lib     
 COPY --from=BUILD /usr/src/app/wps-routing-api/target/unpacked/META-INF         /app/META-INF
 
 
-ENV SERVER_PORT 8000
+ENV SERVER_PORT=8000
 ENV SPRING_DATA_MONGODB_HOST=
 ENV SPRING_DATA_MONGODB_PORT=
 ENV ROUTING_ENDPOINT=

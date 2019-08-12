@@ -16,6 +16,7 @@
  */
 package org.n52.testbed.routing;
 
+import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Point;
 import org.n52.javaps.algorithm.annotation.ComplexInput;
 import org.n52.javaps.algorithm.annotation.ComplexOutput;
@@ -59,4 +60,5 @@ public interface RoutingAlgorithm {
     @ComplexOutput(identifier = Outputs.ROUTE, title = "The Route.", abstrakt = "The computed route.",
                    binding = RouteData.class)
     Route getRoute();
+
 }

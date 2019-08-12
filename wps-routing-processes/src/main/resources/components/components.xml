@@ -29,6 +29,9 @@
 
     <!-- algorithms -->
     <bean class="org.n52.testbed.routing.here.HereAlgorithm"/>
+    <bean class="org.n52.testbed.routing.ecere.EcereAlgorithm"/>
+    <bean class="org.n52.testbed.routing.skymantics.SkymanticsRoutingAlgorithm"/>
+
     <!-- IO handler -->
     <bean class="org.n52.testbed.routing.io.RouteOutputHandler"/>
     <bean class="org.n52.testbed.routing.io.WhenInputHandler"/>
