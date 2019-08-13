@@ -289,7 +289,7 @@ public class HereAlgorithm extends AbstractRoutingAlgorithm
         props.setRoadName(m.getRoadName());
         props.setAdditionalProperty("text", m.getInstruction());
 
-        return new RouteFeature(m.getShape(), createFeatureProperties(props));
+        return new RouteFeature(m.getPosition(), createFeatureProperties(props));
     }
 
     private Instruction getInstructionFromDirection(String direction) {

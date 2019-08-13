@@ -37,4 +37,4 @@ routing:
   endpoint: https://testbed.dev.52north.org/javaps/rest/
   process: org.n52.project.tb15.du.GetUpdatesProcess
   polling:
-    delay: PT5S
+    delay: PT1S

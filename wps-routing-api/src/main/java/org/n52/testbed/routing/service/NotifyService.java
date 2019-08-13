@@ -46,7 +46,6 @@ public class NotifyService {
 
     public void notifySubscriber(RouteInfo routeInfo, URI subscriber, Route route) {
         try {
-
             httpClient.newCall(createRequest(route, subscriber)).enqueue(new NotifyCallback(routeInfo));
         } catch (JsonProcessingException e) {
             failure(routeInfo, e);
@@ -56,7 +55,6 @@ public class NotifyService {
     private Request createRequest(Route route, URI subscriber) throws JsonProcessingException {
         RequestBody body = RequestBody.create(MediaType.get(MediaTypes.APPLICATION_JSON),
                                               objectMapper.writeValueAsBytes(route));
-
         return new Request.Builder().url(subscriber.toString()).post(body).build();
     }
 

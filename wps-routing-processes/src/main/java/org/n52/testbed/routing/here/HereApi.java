@@ -289,6 +289,10 @@ public interface HereApi {
             return null;
         }
 
+        public Point getPosition() {
+            return position;
+        }
+
         public String getDirection() {
             return direction;
         }
