@@ -13,6 +13,7 @@ x-common:
     ROUTING_ENDPOINT: http://wps:8080/rest/
     SPRING_DATA_MONGODB_HOST: mongo
     SPRING_DATA_MONGODB_PORT: 27017
+    SERVER_PORT: 8000
     SERVER_USEFORWARDHEADERS: "true"
 
 services:

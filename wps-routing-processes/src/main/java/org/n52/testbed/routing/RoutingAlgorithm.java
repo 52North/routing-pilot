@@ -16,7 +16,6 @@
  */
 package org.n52.testbed.routing;
 
-import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Point;
 import org.n52.javaps.algorithm.annotation.ComplexInput;
 import org.n52.javaps.algorithm.annotation.ComplexOutput;
@@ -33,6 +32,10 @@ import org.n52.testbed.routing.model.wps.Outputs;
 import java.util.Optional;
 
 public interface RoutingAlgorithm {
+
+    String FASTEST = "fastest";
+    String SHORTEST = "shortest";
+
     @ComplexInput(identifier = Inputs.START, title = "Start Point", abstrakt = "The starting point of the route.",
                   binding = PointData.class)
     void setStartPoint(Point startPoint);
@@ -46,7 +49,7 @@ public interface RoutingAlgorithm {
     void setName(String name);
 
     @LiteralInput(identifier = Inputs.PREFERENCE, title = "Preference", abstrakt = "The routing preference.",
-                  minOccurs = 0, maxOccurs = 1, allowedValues = {"fastest", "shortest"},
+                  minOccurs = 0, maxOccurs = 1, defaultValue = FASTEST, allowedValues = {FASTEST, SHORTEST},
                   binding = LiteralStringType.class)
     default void setPreference(String preference) {
         setPreference(Optional.ofNullable(preference).map(Preference::fromValue).orElse(Preference.FASTEST));
