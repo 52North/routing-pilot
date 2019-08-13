@@ -1,0 +1,214 @@
+GET http://localhost/here
+Accept: application/json
+###
+GET http://localhost/ecere
+Accept: application/json
+####
+GET http://localhost/skymantics
+Accept: application/json
+####
+GET http://localhost/here/conformance
+Accept: application/json
+###
+GET http://localhost/skymantics/conformance
+Accept: application/json
+###
+GET http://localhost/ecere/conformance
+Accept: application/json
+###
+GET http://localhost/here/processes
+Accept: application/json
+###
+GET http://localhost/skymantics/processes
+Accept: application/json
+###
+GET http://localhost/ecere/processes
+Accept: application/json
+###
+GET http://localhost/here/processes/routing
+Accept: application/json
+###
+GET http://localhost/ecere/processes/routing
+Accept: application/json
+###
+GET http://localhost/skymantics/processes/routing
+Accept: application/json
+###
+GET http://localhost/here/processes/routing/jobs
+Accept: application/json
+###
+GET http://localhost/ecere/processes/routing/jobs
+Accept: application/json
+###
+GET http://localhost/skymantics/processes/routing/jobs
+Accept: application/json
+###
+POST http://localhost/here/processes/routing/jobs
+Accept: application/json
+Content-Type: application/json
+
+{
+  "inputs":[
+    {
+      "id": "name",
+      "input": { "value": "The name of the Route." }
+    },
+    {
+      "id": "waypoints",
+      "input": {
+        "format": { "mimeType": "application/geo+json" },
+        "value": {
+          "inlineValue": {
+            "type": "MultiPoint",
+            "coordinates": [
+              [-77.047712, 38.892346],
+              [-76.994730, 38.902629]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "preference",
+      "input": {
+        "value": "fastest"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "route",
+      "format": { "mimeType": "application/geo+json" },
+      "transmissionMode": "value"
+    }
+  ]
+}
+
+###
+POST http://localhost/ecere/processes/routing/jobs
+Accept: application/json
+Content-Type: application/json
+
+{
+  "inputs":[
+    {
+      "id": "name",
+      "input": { "value": "The name of the Route." }
+    },
+    {
+      "id": "waypoints",
+      "input": {
+        "format": { "mimeType": "application/geo+json" },
+        "value": {
+          "inlineValue": {
+            "type": "MultiPoint",
+            "coordinates": [
+              [-77.047712, 38.892346],
+              [-76.994730, 38.902629]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "preference",
+      "input": {
+        "value": "fastest"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "route",
+      "format": { "mimeType": "application/geo+json" },
+      "transmissionMode": "value"
+    }
+  ]
+}
+
+###
+POST http://localhost/skymantics/processes/routing/jobs
+Accept: application/json
+Content-Type: application/json
+
+{
+  "inputs":[
+    {
+      "id": "name",
+      "input": { "value": "The name of the Route." }
+    },
+    {
+      "id": "waypoints",
+      "input": {
+        "format": { "mimeType": "application/geo+json" },
+        "value": {
+          "inlineValue": {
+            "type": "MultiPoint",
+            "coordinates": [
+              [-77.047712, 38.892346],
+              [-76.994730, 38.902629]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "preference",
+      "input": {
+        "value": "fastest"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "route",
+      "format": { "mimeType": "application/geo+json" },
+      "transmissionMode": "value"
+    }
+  ]
+}
+###
+GET http://localhost/here/processes/routing/jobs/3002ffee-5b54-4772-8589-31ab8e18895c
+Accept: application/json
+###
+GET http://localhost/here/processes/routing/jobs/3002ffee-5b54-4772-8589-31ab8e18895c/result
+Accept: application/json
+###
+GET http://localhost/here/routes
+Accept: application/json
+###
+POST http://localhost/here/routes?mode=async
+Content-Type: application/json
+
+{
+  "name": "The name of the Route.",
+  "preference": "fastest",
+  "waypoints": {
+    "type": "MultiPoint",
+    "coordinates": [
+      [-77.047712,38.892346],
+      [-76.99473,38.902629]
+    ]
+  }
+}
+###
+POST http://localhost/here/routes?mode=sync
+Content-Type: application/json
+
+{
+  "name": "The name of the Route.",
+  "preference": "fastest",
+  "waypoints": {
+    "type": "MultiPoint",
+    "coordinates": [
+      [-77.047712,38.892346],
+      [-76.99473,38.902629]
+    ]
+  }
+}
+###
+GET http://localhost/here/routes/5d359d524cedfd0001108166
+Accept: application/json
+###
+GET http://localhost/here/routes/5d359d524cedfd0001108166/definition
+Accept: application/json
