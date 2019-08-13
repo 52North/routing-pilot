@@ -27,7 +27,6 @@ services:
       - here-api
       - ecere-api
       - skymantics-api
-      - wps
 
   here-api:
     << : *api-common
