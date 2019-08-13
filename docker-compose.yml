@@ -35,7 +35,7 @@ services:
       << : *api-common-env
       ROUTING_PROCESS: org.n52.routing.here
       SPRING_DATA_MONGODB_DATABASE: here
-      SERVER_SERVLET_CONTEXTPATH: ${PREFIX}/here/
+      SERVER_SERVLET_CONTEXTPATH: /here/
 
   ecere-api:
     << : *api-common
@@ -43,7 +43,7 @@ services:
       << : *api-common-env
       ROUTING_PROCESS: org.n52.routing.ecere
       SPRING_DATA_MONGODB_DATABASE: ecere
-      SERVER_SERVLET_CONTEXTPATH: ${PREFIX}/ecere/
+      SERVER_SERVLET_CONTEXTPATH: /ecere/
 
   skymantics-api:
     << : *api-common
@@ -51,7 +51,7 @@ services:
       << : *api-common-env
       ROUTING_PROCESS: org.n52.routing.skymantics
       SPRING_DATA_MONGODB_DATABASE: skymantics
-      SERVER_SERVLET_CONTEXTPATH: ${PREFIX}/skymantics/
+      SERVER_SERVLET_CONTEXTPATH: /skymantics/
 
   mongo:
     image: mongo:latest
