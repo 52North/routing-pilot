@@ -16,6 +16,11 @@
  */
 package org.n52.testbed.routing.api.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.n52.testbed.routing.api.DefaultApi;
 import org.n52.testbed.routing.api.Mode;
 import org.n52.testbed.routing.model.ConformanceClasses;
@@ -51,6 +56,7 @@ import retrofit2.Response;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,9 +80,16 @@ public class RoutingController extends AbstractRoutingController implements Defa
     private static final String PROCESSES_TITLE = "The processes offered by this server";
     private static final String CONFORMANCE_TITLE = "WPS 2.0 REST/JSON Binding Extension "
                                                     + "conformance classes implemented by this server";
+    private static final String OPEN_API_URL = "https://app.swaggerhub.com/apiproxy/schema/file/apis/cportele/wps-routing-api/1.0.0?format=json";
+
+    @Autowired
+    private OkHttpClient client;
 
     @Autowired
     private RouteService service;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public ResponseEntity<Route> computeRoute(@Valid RouteDefinition routeDefinition, @Valid Mode mode) {
@@ -361,6 +374,23 @@ public class RoutingController extends AbstractRoutingController implements Defa
             return ResponseEntity.ok(confClasses);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public JsonNode getOpenApiDefinition() {
+        Request request = new Request.Builder().get().url(OPEN_API_URL).build();
+        try (okhttp3.Response execute = client.newCall(request).execute()) {
+            HttpStatusError.throwIfNotSuccessful(execute);
+            try (Reader reader = execute.body().charStream()) {
+                ObjectNode jsonNode = objectMapper.readValue(reader, ObjectNode.class);
+                ObjectNode server = jsonNode.withArray("servers").addObject();
+                server.put("description", "This instance.");
+                server.put("url", getUriBuilder().toUriString());
+                return jsonNode;
+            }
+        } catch (IOException e) {
+            throw new HttpStatusError(HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
 

@@ -20,6 +20,7 @@
  */
 package org.n52.testbed.routing.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.n52.testbed.routing.model.MediaTypes;
 import org.n52.testbed.routing.model.routing.Route;
 import org.n52.testbed.routing.model.routing.RouteDefinition;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
 import java.beans.PropertyEditorSupport;
@@ -54,6 +56,11 @@ public interface DefaultApi {
     @GetMapping(value = "/conformance",
                 produces = {MediaTypes.APPLICATION_JSON})
     ResponseEntity<ConfClasses> getConformanceDeclaration();
+
+    @GetMapping(value = "/api",
+                produces = {MediaTypes.APPLICATION_OPENAPI})
+    @ResponseBody
+    JsonNode getOpenApiDefinition();
 
     @GetMapping(value = "/processes",
                 produces = {MediaTypes.APPLICATION_JSON})

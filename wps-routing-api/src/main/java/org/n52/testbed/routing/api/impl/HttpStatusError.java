@@ -51,10 +51,14 @@ public class HttpStatusError extends RuntimeException {
     }
 
     public HttpStatusError(Response<?> response) {
+        this(response.raw());
+    }
+
+    public HttpStatusError(okhttp3.Response response) {
         byte[] bytes = null;
         MediaType mt = null;
         this.status = HttpStatus.valueOf(response.code());
-        ResponseBody responseBody = response.errorBody();
+        ResponseBody responseBody = response.body();
         if (responseBody != null) {
             okhttp3.MediaType contentType = responseBody.contentType();
             if (contentType != null) {
@@ -67,6 +71,13 @@ public class HttpStatusError extends RuntimeException {
         }
         this.body = bytes != null ? bytes : this;
         this.mediaType = bytes != null ? mt : MediaType.APPLICATION_JSON;
+    }
+
+    public static okhttp3.Response throwIfNotSuccessful(okhttp3.Response response) {
+        if (response.isSuccessful()) {
+            return response;
+        }
+        throw new HttpStatusError(response);
     }
 
     public static <T> Response<T> throwIfNotSuccessful(Response<T> response) {
