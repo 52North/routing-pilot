@@ -56,4 +56,5 @@ public class MongoJacksonConverter<T> implements GenericConverter {
             throw new IllegalArgumentException(String.format("unsupported types: %s -> %s", sourceType, targetType));
         }
     }
+
 }
