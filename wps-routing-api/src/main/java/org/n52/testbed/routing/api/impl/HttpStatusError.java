@@ -51,7 +51,22 @@ public class HttpStatusError extends RuntimeException {
     }
 
     public HttpStatusError(Response<?> response) {
-        this(response.raw());
+        byte[] bytes = null;
+        MediaType mt = null;
+        this.status = HttpStatus.valueOf(response.code());
+        ResponseBody responseBody = response.errorBody();
+        if (responseBody != null) {
+            okhttp3.MediaType contentType = responseBody.contentType();
+            if (contentType != null) {
+                mt = MediaType.valueOf(contentType.toString());
+                try {
+                    bytes = responseBody.bytes();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+        this.body = bytes != null ? bytes : this;
+        this.mediaType = bytes != null ? mt : MediaType.APPLICATION_JSON;
     }
 
     public HttpStatusError(okhttp3.Response response) {
