@@ -39,7 +39,6 @@ import org.n52.testbed.routing.persistence.MongoJacksonConverterFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -63,13 +62,11 @@ import java.util.List;
 /**
  * Main entry point.
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @EnableMongoRepositories(basePackages = {"org.n52.testbed.routing.persistence"})
-@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 @SuppressWarnings("UncommentedMain")
 public class Application {
-
-    /**
+    /*
      * Start the application.
      *
      * @param args The arguments.
