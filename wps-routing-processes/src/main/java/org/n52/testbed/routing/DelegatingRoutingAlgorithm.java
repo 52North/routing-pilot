@@ -49,7 +49,7 @@ public abstract class DelegatingRoutingAlgorithm extends AbstractRoutingAlgorith
             if (route.getStatus() == null) {
                 route.setStatus(Status.SUCCESSFUL);
             }
-
+            route.setName(getName());
             // remove any links
             route.setLinks(null);
 
