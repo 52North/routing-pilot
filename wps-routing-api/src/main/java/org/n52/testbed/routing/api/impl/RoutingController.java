@@ -364,7 +364,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
 
             ConfClasses confClasses = new ConfClasses();
             confClasses.addConformsToItem(ConformanceClasses.PROCESSES_API);
-            confClasses.addConformsToItem(ConformanceClasses.CORE);
+            addEnumInput(inputs, confClasses, Inputs.PREFERENCE, ConformanceClasses.CORE);
             confClasses.addConformsToItem(ConformanceClasses.CALLBACK);
             confClasses.addConformsToItem(ConformanceClasses.DELETE_ROUTE);
             //confClasses.addConformsToItem(ConformanceClasses.RESULT_SET);
