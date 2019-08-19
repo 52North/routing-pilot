@@ -208,8 +208,8 @@ public class RoutingController extends AbstractRoutingController implements Defa
             process.setInputs(Stream.concat(
                     Stream.of(createWaypointsDescription()),
                     process.getInputs().stream()
-                           .filter(x -> !x.getId().equals(Inputs.START))
-                           .filter(x -> !x.getId().equals(Inputs.END))
+                           .filter(x -> !x.getId().equals(Inputs.ORIGIN))
+                           .filter(x -> !x.getId().equals(Inputs.DESTINATION))
                            .filter(x -> !x.getId().equals(Inputs.INTERMEDIATES)))
                                     .collect(toList()));
             // replace the links with links to this service

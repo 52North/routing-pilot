@@ -189,11 +189,11 @@ public class RouteService {
                                                      geoJsonFormat)));
             }
 
-            inputs.put(Inputs.START, new Input(Inputs.START,
-                                               new ComplexData(newInlineValue(getStartPoint(waypoints)),
+            inputs.put(Inputs.ORIGIN, new Input(Inputs.ORIGIN,
+                                                new ComplexData(newInlineValue(getStartPoint(waypoints)),
                                                                geoJsonFormat)));
-            inputs.put(Inputs.END, new Input(Inputs.END,
-                                             new ComplexData(newInlineValue(getEndPoint(waypoints)),
+            inputs.put(Inputs.DESTINATION, new Input(Inputs.DESTINATION,
+                                                     new ComplexData(newInlineValue(getEndPoint(waypoints)),
                                                              geoJsonFormat)));
             inputs.remove(Inputs.WAYPOINTS);
             execute.setInputs(new ArrayList<>(inputs.values()));
@@ -293,9 +293,9 @@ public class RouteService {
         Optional<Input> name = Optional.ofNullable(routeDefinition.getName()).filter(this::isNotEmpty)
                                        .map(LiteralData::new).map(x -> new Input(Inputs.NAME, x));
         Optional<Input> start = Optional.ofNullable(routeDefinition.getWaypoints()).map(this::getStartPoint)
-                                        .map(this::getGeoJsonData).map(x -> new Input(Inputs.START, x));
+                                        .map(this::getGeoJsonData).map(x -> new Input(Inputs.ORIGIN, x));
         Optional<Input> end = Optional.ofNullable(routeDefinition.getWaypoints()).map(this::getEndPoint)
-                                      .map(this::getGeoJsonData).map(x -> new Input(Inputs.END, x));
+                                      .map(this::getGeoJsonData).map(x -> new Input(Inputs.DESTINATION, x));
         Optional<Input> obstacle = Optional.ofNullable(routeDefinition.getObstacles()).map(this::getGeoJsonData)
                                            .map(x -> new Input(Inputs.OBSTACLES, x));
         Optional<Input> when = Optional.ofNullable(routeDefinition.getWhen()).map(this::getJsonData)

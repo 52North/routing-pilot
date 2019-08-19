@@ -18,8 +18,8 @@ package org.n52.testbed.routing.model.wps;
 
 public interface Inputs {
     String NAME = "name";
-    String START = "start";
-    String END = "end";
+    String ORIGIN = "origin";
+    String DESTINATION = "destination";
     String WAYPOINTS = "waypoints";
     String INTERMEDIATES = "intermediates";
     String OBSTACLES = "obstacles";

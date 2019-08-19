@@ -98,7 +98,7 @@ public class HereAlgorithmTest {
         errors.checkThat(description.getOutputDescriptions().iterator().next().getId(), is(new OwsCode(Outputs.ROUTE)));
         errors.checkThat(description.getInputDescriptions(), hasSize(9));
         errors.checkThat(description.getInputs().stream().map(OwsCode::getValue).collect(toList()),
-                         hasItems(Inputs.NAME, Inputs.START, Inputs.END, Inputs.PREFERENCE, Inputs.WHEN,
+                         hasItems(Inputs.NAME, Inputs.ORIGIN, Inputs.DESTINATION, Inputs.PREFERENCE, Inputs.WHEN,
                                   Inputs.INTERMEDIATES, Inputs.OBSTACLES, Inputs.MAX_HEIGHT, Inputs.MAX_WEIGHT));
 
     }
@@ -109,8 +109,8 @@ public class HereAlgorithmTest {
         LinkedList<ProcessData> inputs = new LinkedList<>();
 
         inputs.add(new StringValueProcessData(new OwsCode(Inputs.NAME), TEXT_PLAIN_FORMAT, "the-name-of-the-route"));
-        inputs.add(new StringValueProcessData(new OwsCode(Inputs.START), GEO_JSON_FORMAT, "{\"type\": \"Point\", \"coordinates\": [-77.047712, 38.892346]}"));
-        inputs.add(new StringValueProcessData(new OwsCode(Inputs.END), GEO_JSON_FORMAT, "{\"type\": \"Point\", \"coordinates\": [-76.994730, 38.902629]}"));
+        inputs.add(new StringValueProcessData(new OwsCode(Inputs.ORIGIN), GEO_JSON_FORMAT, "{\"type\": \"Point\", \"coordinates\": [-77.047712, 38.892346]}"));
+        inputs.add(new StringValueProcessData(new OwsCode(Inputs.DESTINATION), GEO_JSON_FORMAT, "{\"type\": \"Point\", \"coordinates\": [-76.994730, 38.902629]}"));
         inputs.add(new StringValueProcessData(new OwsCode(Inputs.PREFERENCE), TEXT_PLAIN_FORMAT, "fastest"));
 
         OutputDefinition outputDefinition = new OutputDefinition();

@@ -36,11 +36,11 @@ public interface RoutingAlgorithm {
     String FASTEST = "fastest";
     String SHORTEST = "shortest";
 
-    @ComplexInput(identifier = Inputs.START, title = "Start Point", abstrakt = "The starting point of the route.",
+    @ComplexInput(identifier = Inputs.ORIGIN, title = "Start Point", abstrakt = "The starting point of the route.",
                   binding = PointData.class)
     void setStartPoint(Point startPoint);
 
-    @ComplexInput(identifier = Inputs.END, title = "End point", abstrakt = "The end point of the route.",
+    @ComplexInput(identifier = Inputs.DESTINATION, title = "End point", abstrakt = "The end point of the route.",
                   binding = PointData.class)
     void setEndPoint(Point endPoint);
 
