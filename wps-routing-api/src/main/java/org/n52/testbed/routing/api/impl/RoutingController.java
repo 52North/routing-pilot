@@ -91,6 +91,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
                                                     + "conformance classes implemented by this server";
     private static final String OPEN_API_URL = "https://app.swaggerhub.com/apiproxy/schema/file/apis/cportele/wps-routing-api/1.0.0?format=json";
     private static final Logger LOG = LoggerFactory.getLogger(RoutingController.class);
+    private static final String ROUTE_DEFAULT_TITLE = "Unnamed route";
 
     @Autowired
     private OkHttpClient client;
@@ -148,7 +149,8 @@ public class RoutingController extends AbstractRoutingController implements Defa
     public ResponseEntity<Routes> getRoutes() {
         Routes routes = new Routes();
         routes.setLinks(Stream.concat(Stream.of(getRoutesSelfLink()),
-                                      service.getRoutes().map(this::getRouteItemLink)).collect(toList()));
+                                      service.getRoutes().map(this::getRouteItemLink))
+                              .collect(toList()));
         return ResponseEntity.ok(routes);
     }
 
@@ -162,10 +164,10 @@ public class RoutingController extends AbstractRoutingController implements Defa
 
     @NotNull
     private Link getRouteItemLink(@NotNull RouteInfo route) {
-        Link link = new Link().rel(LinkRelation.ITEM).type(MediaTypes.APPLICATION_GEO_JSON);
-        route.getTitle().ifPresent(link::setTitle);
-        link.href(createRouteLink(route.getIdentifier()).toASCIIString());
-        return link;
+        return new Link().rel(LinkRelation.ITEM)
+                         .type(MediaTypes.APPLICATION_GEO_JSON)
+                         .title(route.getTitle().orElse(ROUTE_DEFAULT_TITLE))
+                         .href(createRouteLink(route.getIdentifier()).toASCIIString());
     }
 
     private URI createRouteLink(@NotNull String routeId) {
