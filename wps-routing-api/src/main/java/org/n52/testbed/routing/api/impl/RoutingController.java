@@ -75,12 +75,14 @@ import static java.util.stream.Collectors.toSet;
 @Controller
 @Scope("request")
 public class RoutingController extends AbstractRoutingController implements DefaultApi {
+    private static final String DATA_TITLE = "The routes.";
     private static final String SELF_TITLE = "this document";
     private static final String SERVICE_TITLE = "The API definition";
     private static final String PROCESSES_TITLE = "The processes offered by this server";
     private static final String CONFORMANCE_TITLE = "WPS 2.0 REST/JSON Binding Extension "
                                                     + "conformance classes implemented by this server";
     private static final String OPEN_API_URL = "https://app.swaggerhub.com/apiproxy/schema/file/apis/cportele/wps-routing-api/1.0.0?format=json";
+
 
     @Autowired
     private OkHttpClient client;
@@ -292,7 +294,11 @@ public class RoutingController extends AbstractRoutingController implements Defa
     @Override
     public ResponseEntity<LandingPage> getLandingPage() {
         LandingPage landingPage = new LandingPage();
-        landingPage.setLinks(Arrays.asList(getSelfLink(), getServiceLink(), getConformanceLink(), getProcessesLink()));
+        landingPage.setLinks(Arrays.asList(getSelfLink(),
+                                           getServiceLink(),
+                                           getConformanceLink(),
+                                           getProcessesLink(),
+                                           getDataLink()));
         return ResponseEntity.ok(landingPage);
     }
 
@@ -329,6 +335,15 @@ public class RoutingController extends AbstractRoutingController implements Defa
         link.type(MediaTypes.APPLICATION_JSON);
         link.title(PROCESSES_TITLE);
         link.href(getUriBuilder().path("/processes").toUriString());
+        return link;
+    }
+
+    private Link getDataLink() {
+        Link link = new Link();
+        link.rel(LinkRelation.DATA);
+        link.type(MediaTypes.APPLICATION_JSON);
+        link.title(DATA_TITLE);
+        link.href(getUriBuilder().path("/routes").toUriString());
         return link;
     }
 

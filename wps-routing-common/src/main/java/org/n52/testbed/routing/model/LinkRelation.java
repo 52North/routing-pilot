@@ -27,4 +27,5 @@ public interface LinkRelation {
     String CANONICAL = "canonical";
     String DESCRIBED_BY = "describedby";
     String ITEM = "item";
+    String DATA = "data";
 }
