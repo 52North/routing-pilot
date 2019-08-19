@@ -33,6 +33,8 @@ import org.n52.testbed.routing.model.routing.RouteInfo;
 import org.n52.testbed.routing.model.routing.Routes;
 import org.n52.testbed.routing.model.wps.ComplexDataTypeDescription;
 import org.n52.testbed.routing.model.wps.ConfClasses;
+import org.n52.testbed.routing.model.wps.ConfClassesPossibleValues;
+import org.n52.testbed.routing.model.wps.DescriptionType;
 import org.n52.testbed.routing.model.wps.Execute;
 import org.n52.testbed.routing.model.wps.Format;
 import org.n52.testbed.routing.model.wps.FormatDescription;
@@ -40,12 +42,16 @@ import org.n52.testbed.routing.model.wps.InputDescription;
 import org.n52.testbed.routing.model.wps.Inputs;
 import org.n52.testbed.routing.model.wps.JobCollection;
 import org.n52.testbed.routing.model.wps.LandingPage;
+import org.n52.testbed.routing.model.wps.LiteralDataDomain;
+import org.n52.testbed.routing.model.wps.LiteralDataTypeDescription;
 import org.n52.testbed.routing.model.wps.Process;
 import org.n52.testbed.routing.model.wps.ProcessCollection;
 import org.n52.testbed.routing.model.wps.ProcessOffering;
 import org.n52.testbed.routing.model.wps.Result;
 import org.n52.testbed.routing.model.wps.StatusInfo;
 import org.n52.testbed.routing.service.RouteService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
@@ -61,13 +67,16 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Controller to delegate the processing API requests to a WPS.
@@ -82,7 +91,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
     private static final String CONFORMANCE_TITLE = "WPS 2.0 REST/JSON Binding Extension "
                                                     + "conformance classes implemented by this server";
     private static final String OPEN_API_URL = "https://app.swaggerhub.com/apiproxy/schema/file/apis/cportele/wps-routing-api/1.0.0?format=json";
-
+    private static final Logger LOG = LoggerFactory.getLogger(RoutingController.class);
 
     @Autowired
     private OkHttpClient client;
@@ -351,7 +360,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
     public ResponseEntity<ConfClasses> getConformanceDeclaration() {
 
         try {
-            Set<String> inputIds = getProcessInputs();
+            Map<String, InputDescription> inputs = getProcessInputs();
 
             ConfClasses confClasses = new ConfClasses();
             confClasses.addConformsToItem(ConformanceClasses.PROCESSES_API);
@@ -361,34 +370,60 @@ public class RoutingController extends AbstractRoutingController implements Defa
             //confClasses.addConformsToItem(ConformanceClasses.RESULT_SET);
             confClasses.addConformsToItem(ConformanceClasses.SYNC_MODE);
 
-            if (inputIds.contains(Inputs.ALGORITHM)) {
-                confClasses.addConformsToItem(ConformanceClasses.ROUTING_ALGORITHM);
-            }
-            if (inputIds.contains(Inputs.DATASET)) {
-                confClasses.addConformsToItem(ConformanceClasses.SOURCE_DATASET);
-            }
-            if (inputIds.contains(Inputs.ENGINE)) {
-                confClasses.addConformsToItem(ConformanceClasses.ROUTING_ENGINE);
-            }
-            if (inputIds.contains(Inputs.MAX_HEIGHT)) {
+            addEnumInput(inputs, confClasses, Inputs.ALGORITHM, ConformanceClasses.ROUTING_ALGORITHM);
+            addEnumInput(inputs, confClasses, Inputs.DATASET, ConformanceClasses.SOURCE_DATASET);
+            addEnumInput(inputs, confClasses, Inputs.ENGINE, ConformanceClasses.ROUTING_ENGINE);
+
+            if (inputs.containsKey(Inputs.MAX_HEIGHT)) {
                 confClasses.addConformsToItem(ConformanceClasses.MAX_HEIGHT);
             }
-            if (inputIds.contains(Inputs.MAX_WEIGHT)) {
+            if (inputs.containsKey(Inputs.MAX_WEIGHT)) {
                 confClasses.addConformsToItem(ConformanceClasses.MAX_WEIGHT);
             }
-            if (inputIds.contains(Inputs.OBSTACLES)) {
+            if (inputs.containsKey(Inputs.OBSTACLES)) {
                 confClasses.addConformsToItem(ConformanceClasses.OBSTACLES);
             }
-            if (inputIds.contains(Inputs.WHEN)) {
+            if (inputs.containsKey(Inputs.WHEN)) {
                 confClasses.addConformsToItem(ConformanceClasses.TIME);
             }
-            if (inputIds.contains(Inputs.INTERMEDIATES)) {
+            if (inputs.containsKey(Inputs.INTERMEDIATES)) {
                 confClasses.addConformsToItem(ConformanceClasses.INTERMEDIATE_WAYPOINTS);
             }
 
             return ResponseEntity.ok(confClasses);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void addEnumInput(Map<String, InputDescription> inputs, ConfClasses confClasses, String inputId,
+                              String conformanceClass) {
+        if (inputs.containsKey(inputId)) {
+            confClasses.addConformsToItem(conformanceClass);
+            ConfClassesPossibleValues possibleValues = getPossibleValues(inputs.get(inputId));
+            if (possibleValues != null && !possibleValues.isEmpty()) {
+                confClasses.setAdditionalValue(conformanceClass, possibleValues);
+            }
+        }
+    }
+
+    private ConfClassesPossibleValues getPossibleValues(InputDescription description) {
+        try {
+            return objectMapper.convertValue(description.getInput(), LiteralDataTypeDescription.class)
+                               .getLiteralDataDomains()
+                               .stream()
+                               .map(LiteralDataDomain::getValueDefinition)
+                               .filter(JsonNode::isArray)
+                               .map(Iterable::spliterator)
+                               .flatMap(s -> StreamSupport.stream(s, false))
+                               .filter(JsonNode::isValueNode)
+                               .map(JsonNode::asText)
+                               .filter(Objects::nonNull)
+                               .collect(toCollection(ConfClassesPossibleValues::new));
+
+        } catch (Throwable ex) {
+            LOG.warn("can't get list of possible values for input " + description.getId(), ex);
+            return null;
         }
     }
 
@@ -409,11 +444,12 @@ public class RoutingController extends AbstractRoutingController implements Defa
         }
     }
 
-    private Set<String> getProcessInputs() throws IOException {
+    private Map<String, InputDescription> getProcessInputs() throws IOException {
         Response<ProcessOffering> response = getOgcProcessingApi().getProcessDescription(getRoutingProcessId())
                                                                   .execute();
         ProcessOffering processOffering = HttpStatusError.throwIfNotSuccessful(response).body();
-        return processOffering.getProcess().getInputs().stream().map(InputDescription::getId).collect(toSet());
+        return processOffering.getProcess().getInputs().stream()
+                              .collect(toMap(DescriptionType::getId, Function.identity()));
     }
 
 }

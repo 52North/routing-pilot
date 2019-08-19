@@ -16,13 +16,18 @@
  */
 package org.n52.testbed.routing.model.wps;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -33,6 +38,17 @@ public class ConfClasses {
     @JsonProperty("conformsTo")
     @Valid
     private List<String> conformsTo = new ArrayList<>();
+    private Map<String, Object> additionalValues = new HashMap<>();
+
+    @JsonAnySetter
+    public void setAdditionalValue(String key, Object value) {
+        this.additionalValues.put(key, value);
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalValues() {
+        return Collections.unmodifiableMap(this.additionalValues);
+    }
 
     public ConfClasses conformsTo(List<String> conformsTo) {
         this.conformsTo = conformsTo;

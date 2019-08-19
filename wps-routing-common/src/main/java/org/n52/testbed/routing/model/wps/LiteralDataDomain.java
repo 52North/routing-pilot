@@ -17,6 +17,7 @@
 package org.n52.testbed.routing.model.wps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -37,7 +38,7 @@ public class LiteralDataDomain {
     private NamedReference uom;
 
     @JsonProperty("valueDefinition")
-    private ValueDefinition valueDefinition;
+    private JsonNode valueDefinition;
 
     public String getDefaultValue() {
         return defaultValue;
@@ -66,11 +67,11 @@ public class LiteralDataDomain {
     }
 
     @Valid
-    public ValueDefinition getValueDefinition() {
+    public JsonNode getValueDefinition() {
         return valueDefinition;
     }
 
-    public void setValueDefinition(ValueDefinition valueDefinition) {
+    public void setValueDefinition(JsonNode valueDefinition) {
         this.valueDefinition = valueDefinition;
     }
 
@@ -83,8 +84,8 @@ public class LiteralDataDomain {
         }
         LiteralDataDomain that = (LiteralDataDomain) o;
         return Objects.equals(this.getDefaultValue(), that.getDefaultValue()) &&
-                Objects.equals(this.getDataType(), that.getDataType()) &&
-                Objects.equals(this.getUom(), that.getUom());
+               Objects.equals(this.getDataType(), that.getDataType()) &&
+               Objects.equals(this.getUom(), that.getUom());
     }
 
     @Override
