@@ -74,7 +74,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -400,14 +399,14 @@ public class RoutingController extends AbstractRoutingController implements Defa
                               String conformanceClass) {
         if (inputs.containsKey(inputId)) {
             confClasses.addConformsToItem(conformanceClass);
-            ConfClassesPossibleValues possibleValues = getPossibleValues(inputs.get(inputId));
+            List<String> possibleValues = getPossibleValues(inputs.get(inputId));
             if (possibleValues != null && !possibleValues.isEmpty()) {
-                confClasses.setAdditionalValue(conformanceClass, possibleValues);
+                confClasses.setAdditionalValue(conformanceClass, new ConfClassesPossibleValues(possibleValues));
             }
         }
     }
 
-    private ConfClassesPossibleValues getPossibleValues(InputDescription description) {
+    private List<String> getPossibleValues(InputDescription description) {
         try {
             return objectMapper.convertValue(description.getInput(), LiteralDataTypeDescription.class)
                                .getLiteralDataDomains()
@@ -419,7 +418,7 @@ public class RoutingController extends AbstractRoutingController implements Defa
                                .filter(JsonNode::isValueNode)
                                .map(JsonNode::asText)
                                .filter(Objects::nonNull)
-                               .collect(toCollection(ConfClassesPossibleValues::new));
+                               .collect(toList());
 
         } catch (Throwable ex) {
             LOG.warn("can't get list of possible values for input " + description.getId(), ex);
