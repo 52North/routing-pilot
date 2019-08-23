@@ -191,10 +191,10 @@ public class RouteService {
 
             inputs.put(Inputs.ORIGIN, new Input(Inputs.ORIGIN,
                                                 new ComplexData(newInlineValue(getStartPoint(waypoints)),
-                                                               geoJsonFormat)));
+                                                                geoJsonFormat)));
             inputs.put(Inputs.DESTINATION, new Input(Inputs.DESTINATION,
                                                      new ComplexData(newInlineValue(getEndPoint(waypoints)),
-                                                             geoJsonFormat)));
+                                                                     geoJsonFormat)));
             inputs.remove(Inputs.WAYPOINTS);
             execute.setInputs(new ArrayList<>(inputs.values()));
         }
@@ -416,7 +416,13 @@ public class RouteService {
     }
 
     public Route getRoute(@NotNull String routeId) throws RouteNotFoundException {
-        return checkStatus(repository.findById(new ObjectId(routeId)).orElseThrow(RouteNotFoundException::new));
+        ObjectId id;
+        try {
+            id = new ObjectId(routeId);
+        } catch (IllegalArgumentException ex) {
+            throw new RouteNotFoundException();
+        }
+        return checkStatus(repository.findById(id).orElseThrow(RouteNotFoundException::new));
     }
 
     private Route checkStatus(MongoRoute mongoRoute) {
