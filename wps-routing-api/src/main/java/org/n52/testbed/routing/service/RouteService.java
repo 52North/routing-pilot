@@ -303,7 +303,7 @@ public class RouteService {
         Optional<Input> intermediateWaypoints = Optional.ofNullable(routeDefinition.getWaypoints())
                                                         .map(this::getIntermediatePoints).filter(x -> !x.isEmpty())
                                                         .map(this::getGeoJsonData)
-                                                        .map(x -> new Input(Inputs.WAYPOINTS, x));
+                                                        .map(x -> new Input(Inputs.INTERMEDIATES, x));
 
         List<Input> inputs = Stream.of(preference, algorithm, engine, dataset, maxHeight, maxWeight, name,
                                        intermediateWaypoints, obstacle, when, start, end)
