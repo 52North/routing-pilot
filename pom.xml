@@ -69,7 +69,7 @@
 
     <properties>
         <jts-version>1.16.0</jts-version>
-        <retrofit-version>2.6.0</retrofit-version>
+        <retrofit-version>2.6.2</retrofit-version>
         <springfox-version>2.7.0</springfox-version>
         <springboot-version>2.1.1.RELEASE</springboot-version>
         <swagger-codegen-version>3.0.8</swagger-codegen-version>
