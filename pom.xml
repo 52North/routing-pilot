@@ -68,7 +68,7 @@
     </organization>
 
     <properties>
-        <jts-version>1.16.0</jts-version>
+        <jts-version>1.17.1</jts-version>
         <retrofit-version>2.6.0</retrofit-version>
         <springfox-version>2.7.0</springfox-version>
         <springboot-version>2.1.1.RELEASE</springboot-version>
